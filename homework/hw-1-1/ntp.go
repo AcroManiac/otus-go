@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"syscall"
 	"time"
 
@@ -16,7 +17,7 @@ func main() {
 	if tm, err := Time(); nil == err {
 		fmt.Println("Current time is", tm)
 	} else {
-		fmt.Println("An error occurred:", err.Error())
+		_, _ = fmt.Fprintf(os.Stderr, "An error occurred: %s\n", err.Error())
 		syscall.Exit(1)
 	}
 }
