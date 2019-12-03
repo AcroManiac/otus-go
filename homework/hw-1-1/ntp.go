@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"syscall"
 	"time"
 
 	"github.com/beevik/ntp"
@@ -18,6 +17,6 @@ func main() {
 		fmt.Println("Current time is", tm)
 	} else {
 		_, _ = fmt.Fprintf(os.Stderr, "An error occurred: %s\n", err.Error())
-		syscall.Exit(1)
+		os.Exit(1)
 	}
 }
