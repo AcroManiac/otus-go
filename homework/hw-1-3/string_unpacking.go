@@ -23,40 +23,32 @@ func unpackStringArray(sa []string) {
 	}
 }
 
+const emptyRune rune = 0x00
+
+var (
+	bsMode   bool = false
+	prevRune rune = emptyRune
+)
+
+func switchBackslashMode(input string, flag bool) string {
+	bsMode = flag
+	prevRune = emptyRune
+	return input
+}
+
 func unpackString(s string) (us string, err error) {
 	// Check for empty string
 	if len(s) == 0 {
 		return us, errors.New("incorrect string")
 	}
 
-	const emptyRune rune = 0x00
-
-	var (
-		rs       []rune = []rune(s)
-		prevRune rune   = rs[0]
-		bsMode   bool   = false
-	)
+	var rs []rune = []rune(s)
+	prevRune = rs[0]
 
 	for i := 1; i < len(rs); i++ {
 		r := rs[i]
 
 		// Backslash mode logic
-		if r == 0x5C {
-			if bsMode {
-				if prevRune == emptyRune {
-					prevRune = r
-				} else {
-					us += string(prevRune)
-					bsMode = true
-					prevRune = emptyRune
-				}
-			} else {
-				us += string(prevRune)
-				bsMode = true
-				prevRune = emptyRune
-			}
-			continue
-		}
 		if bsMode {
 			if prevRune == emptyRune {
 				prevRune = r
@@ -65,11 +57,13 @@ func unpackString(s string) (us string, err error) {
 					return us, errors.New("incorrect string")
 				}
 				count := int(r - '0')
-				us += strings.Repeat(string(prevRune), count)
-				bsMode = false
-				prevRune = emptyRune
+				us += switchBackslashMode(strings.Repeat(string(prevRune), count), false)
 			}
 		} else {
+			if r == 0x5C {
+				us += switchBackslashMode(string(prevRune), true)
+				continue
+			}
 			// Simple string mode
 			switch {
 			case unicode.IsDigit(r):
