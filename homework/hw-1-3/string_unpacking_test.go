@@ -8,10 +8,16 @@ import (
 
 func TestUnpackString(t *testing.T) {
 	result, _ := unpackString("a2b3c4d5")
-	assert.Equal(t, result, "aabbbccccddddd", "Strings should be equal")
+	assert.Equal(t, "aabbbccccddddd", result, "Strings should be equal")
 
 	result, _ = unpackString(`abc\r3`)
-	assert.Equal(t, result, "abcrrr", "Strings should be equal")
+	assert.Equal(t, "abcrrr", result, "Strings should be equal")
+
+	result, _ = unpackString(`abc\\3`)
+	assert.Equal(t, `abc\\\`, result, "Strings should be equal")
+
+	result, _ = unpackString(`abc\3\4`)
+	assert.Equal(t, "abc34", result, "Strings should be equal")
 
 	_, err := unpackString("789")
 	assert.NotNil(t, err)
