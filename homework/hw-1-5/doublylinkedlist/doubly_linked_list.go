@@ -40,7 +40,6 @@ func (l *List) PushFront(v interface{}) {
 	i := &Item{
 		value: v,
 		next:  l.First(),
-		prev:  nil,
 	}
 	if l.First() != nil {
 		l.First().prev = i
@@ -55,7 +54,6 @@ func (l *List) PushFront(v interface{}) {
 func (l *List) PushBack(v interface{}) {
 	i := &Item{
 		value: v,
-		next:  nil,
 		prev:  l.Last(),
 	}
 	if l.Last() != nil {
@@ -69,6 +67,11 @@ func (l *List) PushBack(v interface{}) {
 }
 
 func (l *List) Remove(i Item) {
+	// Check if item belongs to list with O(1) complexity
+	if i.Prev() == nil && i.Next() == nil {
+		return
+	}
+
 	if i.Prev() == nil {
 		l.first = i.Next()
 	} else {
