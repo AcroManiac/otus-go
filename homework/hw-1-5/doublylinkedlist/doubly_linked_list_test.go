@@ -7,19 +7,32 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPushBack(t *testing.T) {
-	tests := []struct {
-		values []int
-	}{
-		{[]int{2, 12, 85, 06}},
-	}
+type testValues struct {
+	values []interface{}
+}
 
+// Factory for list creation and filling
+func createList(tests []testValues, back bool) List {
 	list := List{}
 	for _, test := range tests {
 		for _, v := range test.values {
-			list.PushBack(v)
+			switch back {
+			case true:
+				list.PushBack(v)
+			case false:
+				list.PushFront(v)
+			}
 		}
 	}
+	return list
+}
+
+func TestPushBack(t *testing.T) {
+	tests := []testValues{
+		{[]interface{}{2, 12, 85, 06}},
+	}
+
+	list := createList(tests, true)
 
 	assert.Equal(t, len(tests[0].values), list.Len(), "Lists lengths should be equal")
 	assert.Equal(t, tests[0].values[0], list.First().Value(), "First items should be equal")
@@ -27,18 +40,11 @@ func TestPushBack(t *testing.T) {
 }
 
 func TestPushFront(t *testing.T) {
-	tests := []struct {
-		values []string
-	}{
-		{[]string{"это", "твой", "номер", "номер", "номер"}},
+	tests := []testValues{
+		{[]interface{}{"это", "твой", "номер", "номер", "номер"}},
 	}
 
-	list := List{}
-	for _, test := range tests {
-		for _, v := range test.values {
-			list.PushFront(v)
-		}
-	}
+	list := createList(tests, false)
 
 	assert.Equal(t, len(tests[0].values), list.Len(), "Lists lengths should be equal")
 	assert.Equal(t, tests[0].values[len(tests[0].values)-1], list.First().Value(), "First items should be equal")
