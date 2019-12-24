@@ -68,7 +68,7 @@ func (l *List) PushBack(v interface{}) {
 
 func (l *List) Remove(i Item) {
 	// Check if item belongs to list with O(1) complexity
-	if i.Prev() == nil && i.Next() == nil {
+	if i.Prev() == nil && i.Next() == nil && l.Len() > 1 {
 		return
 	}
 
