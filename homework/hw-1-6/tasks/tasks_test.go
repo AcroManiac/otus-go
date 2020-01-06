@@ -47,16 +47,16 @@ var tasksWithErrors = []func() error{
 		return errors.New("error in task 1")
 	},
 	func() error {
-		emulateActivity(2, 1, true)
-		return errors.New("error in task 2")
+		emulateActivity(2, 1, false)
+		return nil
 	},
 	func() error {
 		emulateActivity(3, 1, true)
 		return errors.New("error in task 3")
 	},
 	func() error {
-		emulateActivity(4, 2, false)
-		return nil
+		emulateActivity(4, 2, true)
+		return errors.New("error in task 4")
 	},
 	func() error {
 		emulateActivity(5, 3, false)
