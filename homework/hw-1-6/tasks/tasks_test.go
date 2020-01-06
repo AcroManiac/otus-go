@@ -70,12 +70,17 @@ const (
 )
 
 func TestRun(t *testing.T) {
+	var err error
 	log.Println("************ Test 1 ************")
-	err := Run(tasksNoErrors, concurrentTaskNumber, errorsLimit)
+	if err = Run(tasksNoErrors, concurrentTaskNumber, errorsLimit); err != nil {
+		log.Printf("An error occured: %s", err.Error())
+	}
 	assert.Nil(t, err, "There should be no errors in this test")
 
 	log.Println()
 	log.Println("************ Test 2 ************")
-	err = Run(tasksWithErrors, concurrentTaskNumber, errorsLimit)
+	if err = Run(tasksWithErrors, concurrentTaskNumber, errorsLimit); err != nil {
+		log.Printf("An error occured: %s", err.Error())
+	}
 	assert.NotNil(t, err, "There should be error in this test")
 }
