@@ -7,6 +7,17 @@ import (
 	"sync"
 )
 
+var abortChan chan struct{}
+
+func cancelled() bool {
+	select {
+	case <-abortChan:
+		return true
+	default:
+		return false
+	}
+}
+
 func Run(tasks []func() error, N int, M int) error {
 
 	// Set number of concurrently working goroutines
@@ -17,14 +28,17 @@ func Run(tasks []func() error, N int, M int) error {
 	errChan := make(chan error, M)   // error channel
 	doneChan := make(chan string, N) // success channel
 
+	// Create channel to interrupt on errors
+	abortChan = make(chan struct{})
+
 	// Use wait group to synchronize writes to channels on function exit
 	var wg sync.WaitGroup
 
 	defer func() {
-		wg.Wait() // Wait until all tasks stop writing to channels
+		wg.Wait() // Wait until all tasks exit
 		close(errChan)
 		close(doneChan)
-		log.Println("Run is exited")
+		log.Println("Run() function is exited")
 	}()
 
 	// Running tasks in separate goroutines
@@ -33,14 +47,24 @@ func Run(tasks []func() error, N int, M int) error {
 		go func(t func() error) {
 			defer wg.Done() // decrement wait group counter on goroutine exit
 
+			// Check the goroutine state
+			if cancelled() {
+				return
+			}
+
 			// Calling the working task
 			err := t()
 			if err != nil {
 				// Make error handling - send error in channel
-				errChan <- err
+				// (check if channel is valid)
+				if !cancelled() {
+					errChan <- err
+				}
 				return
 			}
-			doneChan <- "done"
+			if !cancelled() {
+				doneChan <- "done"
+			}
 		}(task)
 	}
 
@@ -58,7 +82,7 @@ func Run(tasks []func() error, N int, M int) error {
 				doneCounter++
 				if doneCounter == len(tasks) {
 					log.Printf("%d tasks were executed successfully", len(tasks))
-					return nil
+					return nil // No goroutines leaking with buffered channel
 				}
 			}
 		case err := <-errChan:
@@ -67,8 +91,8 @@ func Run(tasks []func() error, N int, M int) error {
 				log.Printf("Task return error: %s", err.Error())
 				errCounter++
 				if errCounter == M {
-					// WARNING!!!!
-					// Go routines leaking!
+					// Send stop signal to all goroutines
+					close(abortChan)
 					return errors.New("error limit is elapsed")
 				}
 			}
