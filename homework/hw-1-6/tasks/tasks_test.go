@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"math/rand"
 	"testing"
@@ -68,20 +69,16 @@ var tasks3 []func() error
 
 func tasks3Builder(number int) {
 	for i := 0; i < number; i++ {
+		i := i
 		tasks3 = append(tasks3, func() error {
-
-			// Emulate activity
-			var delaySec = rand.Intn(5)
-			time.Sleep(time.Duration(delaySec) * time.Second)
+			errFlag := rand.Intn(2) == 0
+			delaySec := rand.Intn(5)
+			emulateActivity(i, delaySec, errFlag)
 
 			// Emulate result || error
-			var err error
-			switch rand.Intn(2) {
-			case 0:
-				err = errors.New("error in task")
-			case 1:
-				log.Printf("Task fired in %d seconds", delaySec)
-				err = nil
+			var err error = nil
+			if errFlag {
+				err = errors.New(fmt.Sprintf("error in task %d", i))
 			}
 			return err
 		})
