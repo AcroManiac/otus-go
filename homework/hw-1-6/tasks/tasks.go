@@ -6,26 +6,14 @@ import (
 	"sync"
 )
 
-var taskChan chan func() error
+var abortChan chan struct{}
 
 func cancelled() bool {
 	select {
-	case <-taskChan:
+	case <-abortChan:
 		return true
 	default:
 		return false
-	}
-}
-
-func sendTasks(tasks []func() error, N int, currentIndex *int) {
-	if cancelled() {
-		return
-	}
-
-	stopIndex := *currentIndex + N
-	for ; *currentIndex < stopIndex && *currentIndex < len(tasks); *currentIndex++ {
-		taskChan <- tasks[*currentIndex]
-		log.Printf("Task %d was sent for execution", *currentIndex)
 	}
 }
 
@@ -36,7 +24,10 @@ func Run(tasks []func() error, N int, M int) error {
 	doneChan := make(chan string, N) // success channel
 
 	// Create task channel
-	taskChan = make(chan func() error, N)
+	taskChan := make(chan func() error, N)
+
+	// Initialize abort channel
+	abortChan = make(chan struct{})
 
 	// Use wait group to synchronize writes to channels on function exit
 	var wg sync.WaitGroup
@@ -45,47 +36,60 @@ func Run(tasks []func() error, N int, M int) error {
 		wg.Wait() // Wait until all tasks exit
 		close(errChan)
 		close(doneChan)
+		close(taskChan)
 		log.Println("Run() function is exited")
+	}()
+
+	// Creating N reusable goroutines for task execution
+	for i := 0; i < N; i++ {
+		// Create goroutine
+		go func() {
+			// Make infinite loop with channel blocking on reading
+			for {
+				// Wait for task and check channels for closed state
+				task := <-taskChan
+				if cancelled() || task == nil {
+					return
+				}
+
+				// Execute task
+				wg.Add(1)
+				err := task()
+				if err != nil {
+					// Error handling
+					if !cancelled() {
+						errChan <- err
+					}
+				}
+				// Successful execution
+				if !cancelled() {
+					doneChan <- "done"
+				}
+				wg.Done()
+			}
+		}()
+	}
+
+	// Send all tasks for execution in a separate goroutine
+	// to prevent blocking on writing
+	go func() {
+		for _, task := range tasks {
+			// Check the goroutine state
+			if cancelled() {
+				return
+			}
+			taskChan <- task
+		}
 	}()
 
 	var (
 		errCounter  int
 		doneCounter int
-		taskIndex   int
 	)
 
-	// Starting task sending pipeline
-	sendTasks(tasks, N, &taskIndex)
-
-	// Reading messages from both channels
 	for {
+		// Reading messages from state channels
 		select {
-		case task := <-taskChan:
-			// Read task from channel and run it in a separate goroutine
-			wg.Add(1) // increment wait group counter
-			go func(t func() error) {
-				defer wg.Done() // decrement wait group counter on goroutine exit
-
-				// Check the goroutine state
-				if cancelled() {
-					return
-				}
-
-				// Calling the working task
-				err := t()
-				if err != nil {
-					// Make error handling - send error in channel
-					// (check if channel is valid)
-					if !cancelled() {
-						errChan <- err
-					}
-					return
-				}
-				if !cancelled() {
-					doneChan <- "done"
-				}
-			}(task)
-			log.Println("Goroutine with task created")
 		case state := <-doneChan:
 			// Checking success state from channel
 			if state == "done" {
@@ -99,23 +103,18 @@ func Run(tasks []func() error, N int, M int) error {
 				errCounter++
 				if errCounter == M {
 					// Send stop signal to all goroutines
-					close(taskChan)
+					close(abortChan)
 					return errors.New("error limit is exceeded")
 				}
 			}
 		}
 
-		// Checking if N goroutines exited
-		if doneCounter == N {
-			if taskIndex == len(tasks) {
-				log.Printf("%d tasks were executed successfully", taskIndex)
-				// Send stop signal to all goroutines
-				close(taskChan)
-				return nil
-			}
-			// Send next task bundle for execution
-			sendTasks(tasks, N, &taskIndex)
-			doneCounter = 0
+		// Checking if all tasks completed
+		if doneCounter == len(tasks) {
+			log.Printf("%d tasks were executed successfully", doneCounter)
+			// Send stop signal to all goroutines
+			close(abortChan)
+			return nil
 		}
 	}
 
