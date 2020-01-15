@@ -1,0 +1,3 @@
+module github.com/AcroManiac/otus-go/homework/hw-2-1
+
+go 1.13
