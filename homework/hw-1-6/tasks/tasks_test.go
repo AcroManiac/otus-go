@@ -107,8 +107,8 @@ func TestRun(t *testing.T) {
 
 	log.Println()
 	log.Println("************ Test 3 ************")
-	tasks3Builder(10)
-	if err = Run(tasks3, 5, 2); err != nil {
+	tasks3Builder(20)
+	if err = Run(tasks3, 10, 4); err != nil {
 		log.Printf("An error occurred: %s", err.Error())
 	}
 	assert.NotNil(t, err, "There should be error in this test")

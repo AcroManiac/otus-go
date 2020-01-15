@@ -1,26 +1,27 @@
 package main
 
 import (
+	"errors"
 	"github.com/AcroManiac/otus-go/homework/hw-1-6/tasks"
 	"time"
 )
 
 func main() {
-	tasks.Run([]func() error{
+	_ = tasks.Run([]func() error{
 		func() error {
 			println("first")
 			time.Sleep(time.Second)
-			return nil
+			return errors.New("")
 		},
 		func() error {
 			println("second")
 			time.Sleep(time.Second)
-			return nil
+			return errors.New("")
 		},
 		func() error {
 			println("third")
 			time.Sleep(time.Second)
-			return nil
+			return errors.New("")
 		},
-	}, 1, 1)
+	}, 4, 1)
 }

@@ -20,7 +20,7 @@ func cancelled() bool {
 func Run(tasks []func() error, N int, M int) error {
 
 	// Create working channels
-	errChan := make(chan error, M)   // error channel
+	errChan := make(chan error, M+1) // error channel
 	doneChan := make(chan string, N) // success channel
 
 	// Create task channel
@@ -33,27 +33,29 @@ func Run(tasks []func() error, N int, M int) error {
 	var wg sync.WaitGroup
 
 	defer func() {
+		close(taskChan)
 		wg.Wait() // Wait until all tasks exit
 		close(errChan)
 		close(doneChan)
-		close(taskChan)
 		log.Println("Run() function is exited")
 	}()
 
 	// Creating N reusable goroutines for task execution
 	for i := 0; i < N; i++ {
 		// Create goroutine
+		wg.Add(1)
 		go func() {
+			defer wg.Done()
 			// Make infinite loop with channel blocking on reading
 			for {
 				// Wait for task and check channels for closed state
 				task := <-taskChan
 				if cancelled() || task == nil {
+					log.Println("Goroutine exited on channel closing")
 					return
 				}
 
 				// Execute task
-				wg.Add(1)
 				err := task()
 				if err != nil {
 					// Error handling
@@ -65,7 +67,6 @@ func Run(tasks []func() error, N int, M int) error {
 				if !cancelled() {
 					doneChan <- "done"
 				}
-				wg.Done()
 			}
 		}()
 	}
