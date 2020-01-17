@@ -21,6 +21,8 @@ func init() {
 	flag.IntVar(&flagOffset, "offset", 0, "bytes offset from file start")
 }
 
+// To test main() run the command:
+// go run main.go -from=./gocopy/gocopy.go -to=./copied.txt limit=-1 offset=0
 func main() {
 	flag.Parse()
 
