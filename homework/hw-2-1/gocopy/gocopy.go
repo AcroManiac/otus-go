@@ -36,7 +36,10 @@ func Copy(from string, to string, limit int, offset int) error {
 	if offset > 0 {
 		offset64 := int64(offset)
 		if pos, err := file.Seek(offset64, 0); err != nil || pos != offset64 {
-			return fmt.Errorf("could not set offset for reading: %s", err.Error())
+			return fmt.Errorf("could not set offset for reading")
+		}
+		if offset64+bytesToWrite >= info.Size() {
+			bytesToWrite = offset64 + bytesToWrite - info.Size()
 		}
 	}
 
@@ -56,6 +59,7 @@ func Copy(from string, to string, limit int, offset int) error {
 		written, err := io.CopyN(output, input, copySize)
 		if err != nil {
 			if err == io.EOF {
+				bar.Add64(written)
 				break
 			}
 			return fmt.Errorf("error while copying the file: %s", err.Error())

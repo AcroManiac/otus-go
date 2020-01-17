@@ -68,8 +68,8 @@ func TestCopy(t *testing.T) {
 	if written != autogenSize {
 		log.Fatalf("Number of written bytes is less than expected: %d", written)
 	}
-	autogen.Close()
-	random.Close()
+	_ = autogen.Close()
+	_ = random.Close()
 
 	for _, test := range copyTests {
 		err = Copy("test-autogen.dat", test.outputFileName, test.limit, test.offset)
