@@ -2,7 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/AcroManiac/otus-go/homework/hw-2-1/gocopy"
 )
@@ -21,10 +23,20 @@ func init() {
 	flag.IntVar(&flagOffset, "offset", 0, "bytes offset from file start")
 }
 
+var Usage = func() {
+	fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s:\n", os.Args[0])
+	flag.PrintDefaults()
+}
+
 // To test main() run the command:
-// go run main.go -from=./gocopy/gocopy.go -to=./copied.txt limit=-1 offset=0
+// go run main.go -from ./gocopy/gocopy.go -to ./copied.txt limit -1 offset 0
 func main() {
+	flag.Usage = Usage
 	flag.Parse()
+	if len(flag.Args()) == 0 {
+		flag.Usage()
+		os.Exit(1)
+	}
 
 	if err := gocopy.Copy(flagFrom, flagTo, flagLimit, flagOffset); err != nil {
 		log.Fatalf("An error occurred while file copying: %s", err.Error())
