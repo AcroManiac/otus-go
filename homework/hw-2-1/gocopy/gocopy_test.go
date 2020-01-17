@@ -23,6 +23,24 @@ var copyTests = []struct {
 		0,
 		autogenSize,
 	},
+	{
+		"test-copy-2.dat",
+		autogenSize / 2,
+		0,
+		autogenSize / 2,
+	},
+	{
+		"test-copy-3.dat",
+		-1,
+		autogenSize / 2,
+		autogenSize / 2,
+	},
+	{
+		"test-copy-4.dat",
+		autogenSize / 2,
+		3 * autogenSize / 4,
+		autogenSize / 4,
+	},
 }
 
 func deleteFile(path string) {
@@ -56,6 +74,17 @@ func TestCopy(t *testing.T) {
 	for _, test := range copyTests {
 		err = Copy("test-autogen.dat", test.outputFileName, test.limit, test.offset)
 		assert.Nil(t, err, "There should be no errors in this test")
+
+		// Check output file size
+		output, err := os.Open(test.outputFileName)
+		if err != nil {
+			log.Fatalf("Could not open output file %s: %s", test.outputFileName, err.Error())
+		}
+		info, err := output.Stat()
+		if err != nil {
+			log.Fatalf("Could not get file info %s: %s", test.outputFileName, err.Error())
+		}
+		assert.Equal(t, test.expectedFileSize, info.Size(), "")
 
 		// Delete copy file
 		deleteFile(test.outputFileName)
