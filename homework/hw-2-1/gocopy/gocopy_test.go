@@ -92,4 +92,8 @@ func TestCopy(t *testing.T) {
 
 	// Delete test file with content
 	deleteFile("test-autogen.dat")
+
+	// Test for absent file
+	err = Copy("test-autogen.dat", "/dev/null", -1, 0)
+	assert.NotNil(t, err, "There should be an error in this test")
 }

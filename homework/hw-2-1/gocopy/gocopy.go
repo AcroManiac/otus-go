@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
 const copySize = 50 * 1024 // 50 KiBytes
@@ -38,6 +40,10 @@ func Copy(from string, to string, limit int, offset int) error {
 		}
 	}
 
+	// Create and start console progress bar
+	bar := pb.StartNew(int(bytesToWrite))
+	bar.SetWriter(os.Stdout)
+
 	// Create writer
 	output, err := os.Create(to)
 	if err != nil {
@@ -55,7 +61,9 @@ func Copy(from string, to string, limit int, offset int) error {
 			return fmt.Errorf("error while copying the file: %s", err.Error())
 		}
 		totalWritten += written
+		bar.Add64(written)
 	}
 
+	bar.Finish()
 	return nil
 }
