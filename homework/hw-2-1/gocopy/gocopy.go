@@ -23,10 +23,10 @@ func Copy(from string, to string, limit int, offset int) error {
 	if err != nil {
 		return fmt.Errorf("could not get file info: %s", err.Error())
 	}
-	var bytesToWrite int64 = info.Size()
+	bytesToWrite := info.Size()
 
 	// Set limit of bytes to read
-	var input io.Reader = file
+	input := io.Reader(file)
 	if limit != -1 {
 		input = io.LimitReader(file, int64(limit))
 		bytesToWrite = int64(limit)
