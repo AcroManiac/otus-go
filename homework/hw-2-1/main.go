@@ -33,7 +33,9 @@ var Usage = func() {
 func main() {
 	flag.Usage = Usage
 	flag.Parse()
-	if len(flag.Args()) == 0 {
+
+	// Using sensible defaults to check flag values
+	if flagFrom == "" || flagTo == "" {
 		flag.Usage()
 		os.Exit(1)
 	}
