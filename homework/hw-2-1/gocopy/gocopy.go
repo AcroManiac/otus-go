@@ -39,7 +39,7 @@ func Copy(from string, to string, limit int, offset int) error {
 			return fmt.Errorf("could not set offset for reading")
 		}
 		if offset64+bytesToWrite >= info.Size() {
-			bytesToWrite = offset64 + bytesToWrite - info.Size()
+			bytesToWrite = info.Size() - offset64
 		}
 	}
 

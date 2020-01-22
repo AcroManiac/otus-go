@@ -29,7 +29,7 @@ var Usage = func() {
 }
 
 // To test main() run the command:
-// go run main.go -from ./gocopy/gocopy.go -to ./copied.txt limit -1 offset 0
+// go run main.go -from ./gocopy/gocopy.go -to ./copied.txt -limit -1 -offset 0
 func main() {
 	flag.Usage = Usage
 	flag.Parse()
