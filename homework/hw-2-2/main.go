@@ -8,7 +8,7 @@ import (
 )
 
 // To test main() run the command:
-// go run main.go ./dir echo "$USER lives in $CITY planet $PLANET"
+// go run main.go ./dir printenv USER CITY PLANET
 func main() {
 	flag.Parse()
 
