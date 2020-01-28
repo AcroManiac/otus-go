@@ -17,11 +17,19 @@ func (ms *MemoryStorage) Add(event event.Event) error {
 	if _, ok := ms.events[event.StartTime]; ok {
 		return ErrTimeBusy
 	}
+	ms.events[event.StartTime] = event
 	return nil
 }
 
+// isExist is checking element existence in map.
+// Used for unit testing purposes also
+func (ms MemoryStorage) isExist(time time.Time) bool {
+	_, ok := ms.events[time]
+	return ok
+}
+
 func (ms *MemoryStorage) Remove(time time.Time) error {
-	if _, ok := ms.events[time]; !ok {
+	if !ms.isExist(time) {
 		return ErrNotFoundEvent
 	}
 	delete(ms.events, time)
@@ -29,7 +37,7 @@ func (ms *MemoryStorage) Remove(time time.Time) error {
 }
 
 func (ms *MemoryStorage) Edit(time time.Time, event event.Event) error {
-	if _, ok := ms.events[time]; !ok {
+	if !ms.isExist(time) {
 		return ErrNotFoundEvent
 	}
 	ms.events[time] = event
