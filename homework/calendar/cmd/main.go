@@ -1,11 +1,12 @@
 package main
 
 import (
+	"log"
+	"time"
+
 	"github.com/AcroManiac/otus-go/homework/calendar/internal/event"
 	"github.com/AcroManiac/otus-go/homework/calendar/internal/storage"
 	"github.com/google/uuid"
-	"log"
-	"time"
 )
 
 type Calendar struct {
