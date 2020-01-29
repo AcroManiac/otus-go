@@ -37,8 +37,17 @@ func (ms *MemoryStorage) Remove(time time.Time) error {
 }
 
 func (ms *MemoryStorage) Edit(time time.Time, event event.Event) error {
+	// Check input data for errors
 	if !ms.isExist(time) {
 		return ErrNotFoundEvent
+	}
+
+	// Check if event time was changed
+	if time != event.StartTime {
+		if ms.isExist(event.StartTime) {
+			return ErrTimeBusy
+		}
+		ms.Remove(time)
 	}
 	ms.events[time] = event
 	return nil
