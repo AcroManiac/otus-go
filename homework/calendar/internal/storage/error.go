@@ -1,5 +1,6 @@
 package storage
 
+// Define error type and interface
 type Error string
 
 func (e Error) Error() string {
