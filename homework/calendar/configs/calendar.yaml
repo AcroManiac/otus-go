@@ -1,0 +1,7 @@
+---
+http_listen:
+  ip: "127.0.0.1"
+  port: 9000
+log:
+  log_file: ../cmd/calendar.log
+  log_level: debug
