@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/AcroManiac/otus-go/homework/calendar/internal/event"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,37 +12,33 @@ var location, _ = time.LoadLocation("Europe/Moscow")
 var timePoint = time.Date(2020, 1, 28, 16, 20, 39, 50, location)
 var events = []event.Event{
 	{
-		Id:           uuid.New(),
 		Header:       "Test Event 1",
 		StartTime:    timePoint,
-		Duration:     time.Hour,
+		StopTime:     timePoint.Add(time.Hour),
 		Description:  func(s string) *string { return &s }("Memory storage test event 1"),
 		Owner:        "artem",
 		Notification: func(t time.Duration) *time.Duration { return &t }(15 * time.Minute),
 	},
 	{
-		Id:           uuid.New(),
 		Header:       "Test Event 2",
 		StartTime:    timePoint.Add(6 * time.Hour),
-		Duration:     30 * time.Minute,
+		StopTime:     timePoint.Add(6 * time.Hour).Add(30 * time.Minute),
 		Description:  func(s string) *string { return &s }("Memory storage test event 2"),
 		Owner:        "artem",
 		Notification: nil,
 	},
 	{
-		Id:           uuid.New(),
 		Header:       "Test Event 3",
 		StartTime:    timePoint.Add(-time.Hour),
-		Duration:     15 * time.Minute,
+		StopTime:     timePoint.Add(-time.Hour).Add(15 * time.Minute),
 		Description:  func(s string) *string { return &s }("Memory storage test event 3"),
 		Owner:        "artem",
 		Notification: func(t time.Duration) *time.Duration { return &t }(5 * time.Minute),
 	},
 	{
-		Id:           uuid.New(),
 		Header:       "Test Event 4",
 		StartTime:    timePoint.Add(7 * 24 * time.Hour), // Next week
-		Duration:     15 * time.Minute,
+		StopTime:     timePoint.Add(7 * 24 * time.Hour).Add(15 * time.Minute),
 		Description:  func(s string) *string { return &s }("Memory storage test event 4"),
 		Owner:        "artem",
 		Notification: func(t time.Duration) *time.Duration { return &t }(5 * time.Minute),
@@ -52,9 +47,9 @@ var events = []event.Event{
 
 // Factory for memory storage. Build and populate with events
 func createMemoryStorage(t *testing.T) *MemoryStorage {
-	ms := New()
+	ms := NewMemoryStorage()
 	for _, e := range events {
-		if err := ms.Add(e); err != nil {
+		if _, err := ms.Add(e); err != nil {
 			t.Errorf("Couldn't populate with event: %s", err.Error())
 		}
 	}
@@ -69,40 +64,41 @@ func TestMemoryStorage_Add(t *testing.T) {
 	}
 	ms := createMemoryStorage(t)
 	for _, startTime := range addTests.expected {
-		if !ms.isExist(startTime) {
+		if _, ok := ms.isExistTime(startTime); !ok {
 			t.Errorf("event with time %v was not populated", startTime)
 		}
 	}
 
 	// Test error case
-	err := ms.Add(events[0])
+	_, err := ms.Add(events[0])
 	assert.NotNil(t, err, "Method should return an error")
 }
 
 func TestMemoryStorage_Remove(t *testing.T) {
 	var removeTests = struct {
-		existed []time.Time
-		removed []time.Time
+		existed []event.Event
+		removed []event.Event
 	}{
-		[]time.Time{events[0].StartTime, events[2].StartTime},
-		[]time.Time{events[1].StartTime, events[3].StartTime},
+		[]event.Event{events[0], events[2]},
+		[]event.Event{events[1], events[3]},
 	}
 	ms := createMemoryStorage(t)
 
 	// Remove events from storage
-	for _, startTime := range removeTests.removed {
-		err := ms.Remove(startTime)
+	for _, re := range removeTests.removed {
+		id, ok := ms.isExistTime(re.StartTime)
+		err := ms.Remove(id)
 		assert.Nil(t, err, "Method should return no error")
 
 		// Check if event was removed really
-		ok := ms.isExist(startTime)
-		assert.Falsef(t, ok, "event with time %v shouldn't exist in storage", startTime)
+		_, ok = ms.isExistTime(re.StartTime)
+		assert.Falsef(t, ok, "event with time %v shouldn't exist in storage", re.StartTime)
 	}
 
 	// Check remained events
-	for _, startTime := range removeTests.existed {
-		ok := ms.isExist(startTime)
-		assert.Truef(t, ok, "event with time %v should exist in storage", startTime)
+	for _, ee := range removeTests.existed {
+		_, ok := ms.isExistTime(ee.StartTime)
+		assert.Truef(t, ok, "event with time %v should exist in storage", ee.StartTime)
 	}
 }
 
@@ -112,10 +108,13 @@ func TestMemoryStorage_Edit(t *testing.T) {
 	// Modify time for event in storage
 	me := events[3]
 	me.StartTime = events[0].StartTime.Add(time.Hour)
-	err := ms.Edit(events[3].StartTime, me)
+	id, err := ms.Add(me)
+	assert.Nil(t, err, "Method should return no error")
+	me.StartTime = me.StartTime.Add(time.Hour)
+	err = ms.Edit(id, me)
 	assert.Nil(t, err, "Method should return no error")
 	me.StartTime = events[0].StartTime
-	err = ms.Edit(events[3].StartTime, me)
+	err = ms.Edit(id, me)
 	assert.NotNil(t, err, "Method should return error")
 }
 

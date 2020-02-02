@@ -1,55 +1,63 @@
 package storage
 
 import (
-	"github.com/AcroManiac/otus-go/homework/calendar/internal/event"
 	"time"
+
+	"github.com/AcroManiac/otus-go/homework/calendar/internal/event"
+	"github.com/google/uuid"
 )
 
 type MemoryStorage struct {
-	events map[time.Time]event.Event
+	events map[EventId]event.Event
 }
 
-func New() *MemoryStorage {
-	return &MemoryStorage{events: make(map[time.Time]event.Event)}
+func NewMemoryStorage() *MemoryStorage {
+	return &MemoryStorage{events: make(map[EventId]event.Event)}
 }
 
-func (ms *MemoryStorage) Add(event event.Event) error {
-	if _, ok := ms.events[event.StartTime]; ok {
-		return ErrTimeBusy
-	}
-	ms.events[event.StartTime] = event
-	return nil
-}
-
-// isExist is checking element existence in map.
+// isExistTime is checking event time existence in map.
 // Used for unit testing purposes also
-func (ms MemoryStorage) isExist(time time.Time) bool {
-	_, ok := ms.events[time]
+func (ms MemoryStorage) isExistTime(time time.Time) (EventId, bool) {
+	for id, e := range ms.events {
+		if e.StartTime == time {
+			return id, true
+		}
+	}
+	return EventId(uuid.UUID{}), false
+}
+
+// isExistId is checking event existence in map by Id.
+func (ms MemoryStorage) isExistId(id EventId) bool {
+	_, ok := ms.events[id]
 	return ok
 }
 
-func (ms *MemoryStorage) Remove(time time.Time) error {
-	if !ms.isExist(time) {
+func (ms *MemoryStorage) Add(event event.Event) (EventId, error) {
+	if _, ok := ms.isExistTime(event.StartTime); ok {
+		return EventId(uuid.UUID{}), ErrTimeBusy
+	}
+	eventId := EventId(uuid.New())
+	ms.events[eventId] = event
+	return eventId, nil
+}
+
+func (ms *MemoryStorage) Remove(id EventId) error {
+	if !ms.isExistId(id) {
 		return ErrNotFoundEvent
 	}
-	delete(ms.events, time)
+	delete(ms.events, id)
 	return nil
 }
 
-func (ms *MemoryStorage) Edit(time time.Time, event event.Event) error {
+func (ms *MemoryStorage) Edit(id EventId, event event.Event) error {
 	// Check input data for errors
-	if !ms.isExist(time) {
+	if !ms.isExistId(id) {
 		return ErrNotFoundEvent
 	}
-
-	// Check if event time was changed
-	if time != event.StartTime {
-		if ms.isExist(event.StartTime) {
-			return ErrTimeBusy
-		}
-		ms.Remove(time)
+	if _, ok := ms.isExistTime(event.StartTime); ok {
+		return ErrTimeBusy
 	}
-	ms.events[time] = event
+	ms.events[id] = event
 	return nil
 }
 
@@ -71,9 +79,9 @@ func (ms MemoryStorage) GetByTimePeriod(t time.Time, period TimePeriod) ([]event
 	}
 
 	// Iterate through map to find matching events
-	for key, value := range ms.events {
-		if key.After(startTime) && key.Before(stopTime) {
-			selected = append(selected, value)
+	for _, e := range ms.events {
+		if e.StartTime.After(startTime) && e.StartTime.Before(stopTime) {
+			selected = append(selected, e)
 		}
 	}
 
