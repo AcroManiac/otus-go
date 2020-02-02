@@ -4,30 +4,15 @@ import (
 	"log"
 	"time"
 
-	"github.com/AcroManiac/otus-go/homework/calendar/internal/event"
-	"github.com/AcroManiac/otus-go/homework/calendar/internal/storage"
-	"github.com/google/uuid"
+	"github.com/AcroManiac/otus-go/homework/calendar/internal/calendar"
 )
-
-type Calendar struct {
-	Storage storage.Storage
-}
 
 func main() {
 	// Create calendar
-	var calendar Calendar = Calendar{Storage: storage.New()}
+	var cal calendar.Calendar = calendar.NewCalendar()
 
 	// Create and add event
-	testEvent := event.Event{
-		Id:           uuid.New(),
-		Header:       "test event",
-		StartTime:    time.Now(),
-		Duration:     time.Hour,
-		Description:  func(s string) *string { return &s }("Event for calendar testing"),
-		Owner:        "artem",
-		Notification: func(t time.Duration) *time.Duration { return &t }(15 * time.Minute),
-	}
-	if err := calendar.Storage.Add(testEvent); err != nil {
+	if _, err := cal.CreateEvent(time.Now(), time.Now().Add(time.Hour)); err != nil {
 		log.Printf("Error adding event: %s", err.Error())
 	}
 
