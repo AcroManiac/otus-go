@@ -86,7 +86,7 @@ func main() {
 
 func handlerHello(w http.ResponseWriter, r *http.Request) {
 	// Log message params
-	logger.Info("Incoming message",
+	logger.Debug("Incoming message",
 		"host", r.Host,
 		"url", r.URL.Path)
 
