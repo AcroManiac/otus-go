@@ -22,4 +22,8 @@ type Calendar interface {
 	// DeleteEvent removes event from storage by Id.
 	// Returns error if event Id is wrong
 	DeleteEvent(id storage.EventId) error
+
+	// Get event slice by time period (Day, Week, Month)
+	// Returns empty slice if there are no events
+	GetEventsByTimePeriod(time time.Time, period storage.TimePeriod) ([]event.Event, error)
 }

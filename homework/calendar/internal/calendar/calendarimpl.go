@@ -44,3 +44,7 @@ func (i *Impl) EditEvent(id storage.EventId, event event.Event) error {
 func (i *Impl) DeleteEvent(id storage.EventId) error {
 	return i.storage.Remove(id)
 }
+
+func (i *Impl) GetEventsByTimePeriod(time time.Time, period storage.TimePeriod) ([]event.Event, error) {
+	return i.storage.GetByTimePeriod(time, period)
+}
