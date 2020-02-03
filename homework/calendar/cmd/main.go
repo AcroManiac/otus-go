@@ -78,6 +78,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	// Make HTTP server graceful shutdown
 	if err := srv.Shutdown(ctx); err != nil {
 		logger.Fatal("Server shutdown failed", "error", err)
 	}
