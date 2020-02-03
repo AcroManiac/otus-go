@@ -1,9 +1,18 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
+
+	"github.com/gorilla/mux"
 
 	"github.com/AcroManiac/otus-go/homework/calendar/internal/logger"
 	"github.com/spf13/pflag"
@@ -39,8 +48,70 @@ func main() {
 	if _, err := cal.CreateEvent(time.Now(), time.Now().Add(time.Hour)); err != nil {
 		logger.Error("Error adding event", "error", err.Error())
 	}
+	logger.Info("Calendar was created")
 
-	logger.Info("Calendar was created. Bye!")
+	// Initialize and start HTTP server
+	router := mux.NewRouter()
+	router.HandleFunc("/hello", handlerHello).Methods("GET")
 
-	//log.Println(viper.GetString("http_listen.ip"))
+	srv := &http.Server{
+		Addr: fmt.Sprintf("%s:%d",
+			viper.GetString("http_listen.ip"),
+			viper.GetInt("http_listen.port")),
+		Handler: router,
+	}
+
+	// Set interrupt handler
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Fatal("Error while starting HTTP server", "error", err)
+		}
+	}()
+	logger.Info("HTTP server started")
+
+	<-done
+	logger.Info("HTTP server stopped")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		logger.Fatal("Server shutdown failed", "error", err)
+	}
+	logger.Info("HTTP server exited properly")
+}
+
+func handlerHello(w http.ResponseWriter, r *http.Request) {
+	// Log message params
+	logger.Info("Incoming message",
+		"host", r.Host,
+		"url", r.URL.Path)
+
+	// Make JSON response to incoming http request
+	response := HelloResponse{
+		Message: "Hello world!",
+	}
+	jsonResponse(w, response, http.StatusOK)
+}
+
+// JSON representation of message
+type HelloResponse struct {
+	Message string `json:"message"`
+}
+
+// Obtained from http-boilerplate project:
+// https://github.com/jordan-wright/http-boilerplate/blob/master/server/api/v1/api.go
+func jsonResponse(w http.ResponseWriter, data interface{}, c int) {
+	dj, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(c)
+	fmt.Fprintf(w, "%s", dj)
 }
