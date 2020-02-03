@@ -27,7 +27,7 @@ func init() {
 
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.Parse()
-	viper.BindPFlags(pflag.CommandLine)
+	_ = viper.BindPFlags(pflag.CommandLine)
 
 	// Reading configuration from file
 	configPath := viper.GetString("config") // retrieve value from viper
@@ -113,5 +113,5 @@ func jsonResponse(w http.ResponseWriter, data interface{}, c int) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(c)
-	fmt.Fprintf(w, "%s", dj)
+	_, _ = fmt.Fprintf(w, "%s", dj)
 }
