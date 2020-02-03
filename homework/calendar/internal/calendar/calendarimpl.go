@@ -1,8 +1,9 @@
 package calendar
 
 import (
-	"log"
 	"time"
+
+	"github.com/AcroManiac/otus-go/homework/calendar/internal/logger"
 
 	"github.com/AcroManiac/otus-go/homework/calendar/internal/event"
 	"github.com/AcroManiac/otus-go/homework/calendar/internal/storage"
@@ -29,7 +30,7 @@ func (i *Impl) CreateEvent(startTime time.Time, stopTime time.Time) (storage.Eve
 
 	id, err := i.storage.Add(newEvent)
 	if err != nil {
-		log.Printf("Error adding event to storage: %s", err.Error())
+		logger.Error("Error adding event to storage", "error", err)
 		return id, err
 	}
 

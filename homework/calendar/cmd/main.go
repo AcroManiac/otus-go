@@ -108,7 +108,7 @@ func jsonResponse(w http.ResponseWriter, data interface{}, c int) {
 	dj, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
-		log.Println(err)
+		logger.Error("Error creating JSON response", "error", err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
