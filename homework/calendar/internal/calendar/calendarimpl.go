@@ -13,8 +13,8 @@ type Impl struct {
 	storage storage.Storage
 }
 
-func NewCalendar() *Impl {
-	return &Impl{storage: storage.NewMemoryStorage()}
+func NewCalendar(storage storage.Storage) Calendar {
+	return &Impl{storage: storage}
 }
 
 func (i *Impl) CreateEvent(startTime time.Time, stopTime time.Time) (event.IdType, error) {
