@@ -8,40 +8,40 @@ import (
 )
 
 type MemoryStorage struct {
-	events map[EventId]event.Event
+	events map[event.IdType]event.Event
 }
 
 func NewMemoryStorage() *MemoryStorage {
-	return &MemoryStorage{events: make(map[EventId]event.Event)}
+	return &MemoryStorage{events: make(map[event.IdType]event.Event)}
 }
 
 // isExistTime is checking event time existence in map.
 // Used for unit testing purposes also
-func (ms MemoryStorage) isExistTime(time time.Time) (EventId, bool) {
+func (ms MemoryStorage) isExistTime(time time.Time) (event.IdType, bool) {
 	for id, e := range ms.events {
 		if e.StartTime == time {
 			return id, true
 		}
 	}
-	return EventId(uuid.UUID{}), false
+	return event.IdType(uuid.UUID{}), false
 }
 
 // isExistId is checking event existence in map by Id.
-func (ms MemoryStorage) isExistId(id EventId) bool {
+func (ms MemoryStorage) isExistId(id event.IdType) bool {
 	_, ok := ms.events[id]
 	return ok
 }
 
-func (ms *MemoryStorage) Add(event event.Event) (EventId, error) {
-	if _, ok := ms.isExistTime(event.StartTime); ok {
-		return EventId(uuid.UUID{}), ErrTimeBusy
+func (ms *MemoryStorage) Add(ev event.Event) (event.IdType, error) {
+	if _, ok := ms.isExistTime(ev.StartTime); ok {
+		return event.IdType(uuid.UUID{}), ErrTimeBusy
 	}
-	eventId := EventId(uuid.New())
-	ms.events[eventId] = event
-	return eventId, nil
+	id := event.IdType(uuid.New())
+	ms.events[id] = ev
+	return id, nil
 }
 
-func (ms *MemoryStorage) Remove(id EventId) error {
+func (ms *MemoryStorage) Remove(id event.IdType) error {
 	if !ms.isExistId(id) {
 		return ErrNotFoundEvent
 	}
@@ -49,31 +49,31 @@ func (ms *MemoryStorage) Remove(id EventId) error {
 	return nil
 }
 
-func (ms *MemoryStorage) Edit(id EventId, event event.Event) error {
+func (ms *MemoryStorage) Edit(id event.IdType, ev event.Event) error {
 	// Check input data for errors
 	if !ms.isExistId(id) {
 		return ErrNotFoundEvent
 	}
-	if _, ok := ms.isExistTime(event.StartTime); ok {
+	if _, ok := ms.isExistTime(ev.StartTime); ok {
 		return ErrTimeBusy
 	}
-	ms.events[id] = event
+	ms.events[id] = ev
 	return nil
 }
 
-func (ms MemoryStorage) GetByTimePeriod(t time.Time, period TimePeriod) ([]event.Event, error) {
+func (ms MemoryStorage) GetByTimePeriod(t time.Time, period event.TimePeriod) ([]event.Event, error) {
 	var selected []event.Event
 	var startTime, stopTime time.Time
 
 	// Calculate start and stop times for searching interval
 	switch period {
-	case Day:
+	case event.Day:
 		startTime = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
 		stopTime = startTime.Add(24 * time.Hour)
-	case Month:
+	case event.Month:
 		startTime = time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location())
 		stopTime = startTime.AddDate(0, 1, 0)
-	case Week:
+	case event.Week:
 		startTime = t.AddDate(0, 0, -int(t.Weekday()))
 		stopTime = startTime.AddDate(0, 0, 7)
 	}

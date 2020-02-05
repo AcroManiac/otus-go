@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/AcroManiac/otus-go/homework/calendar/internal/event"
-	"github.com/AcroManiac/otus-go/homework/calendar/internal/storage"
 )
 
 // Calendar interface
@@ -13,17 +12,17 @@ type Calendar interface {
 	// CreateEvent function constructs new event with default values
 	// and adds it to event storage. Returns Id of generated event or
 	// storage error if any
-	CreateEvent(startTime time.Time, stopTime time.Time) (storage.EventId, error)
+	CreateEvent(startTime time.Time, stopTime time.Time) (event.IdType, error)
 
 	// EditEvent finds event in storage by Id and replaces it
 	// with event in parameters. Returns error if event Id is wrong
-	EditEvent(id storage.EventId, event event.Event) error
+	EditEvent(id event.IdType, ev event.Event) error
 
 	// DeleteEvent removes event from storage by Id.
 	// Returns error if event Id is wrong
-	DeleteEvent(id storage.EventId) error
+	DeleteEvent(id event.IdType) error
 
 	// Get event slice by time period (Day, Week, Month)
 	// Returns empty slice if there are no events
-	GetEventsByTimePeriod(time time.Time, period storage.TimePeriod) ([]event.Event, error)
+	GetEventsByTimePeriod(time time.Time, period event.TimePeriod) ([]event.Event, error)
 }

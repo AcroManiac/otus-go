@@ -2,7 +2,6 @@ package calendar
 
 import (
 	"github.com/AcroManiac/otus-go/homework/calendar/internal/event"
-	"github.com/AcroManiac/otus-go/homework/calendar/internal/storage"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -93,7 +92,7 @@ func TestImpl_GetEventsByTimePeriod(t *testing.T) {
 	cal := createCalendar(t)
 	assert.NotNil(t, cal, "Object should not be nil")
 
-	filtered, err := cal.storage.GetByTimePeriod(events[0].StartTime, storage.Week)
+	filtered, err := cal.storage.GetByTimePeriod(events[0].StartTime, event.Week)
 	assert.Nil(t, err, "Method should return no error")
 	assert.NotEmpty(t, filtered, "Returned slice should not be empty")
 }

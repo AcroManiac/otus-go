@@ -17,7 +17,7 @@ func NewCalendar() *Impl {
 	return &Impl{storage: storage.NewMemoryStorage()}
 }
 
-func (i *Impl) CreateEvent(startTime time.Time, stopTime time.Time) (storage.EventId, error) {
+func (i *Impl) CreateEvent(startTime time.Time, stopTime time.Time) (event.IdType, error) {
 	// Create and add event
 	newEvent := event.Event{
 		Header:       "",
@@ -37,14 +37,14 @@ func (i *Impl) CreateEvent(startTime time.Time, stopTime time.Time) (storage.Eve
 	return id, nil
 }
 
-func (i *Impl) EditEvent(id storage.EventId, event event.Event) error {
-	return i.storage.Edit(id, event)
+func (i *Impl) EditEvent(id event.IdType, ev event.Event) error {
+	return i.storage.Edit(id, ev)
 }
 
-func (i *Impl) DeleteEvent(id storage.EventId) error {
+func (i *Impl) DeleteEvent(id event.IdType) error {
 	return i.storage.Remove(id)
 }
 
-func (i *Impl) GetEventsByTimePeriod(time time.Time, period storage.TimePeriod) ([]event.Event, error) {
+func (i *Impl) GetEventsByTimePeriod(time time.Time, period event.TimePeriod) ([]event.Event, error) {
 	return i.storage.GetByTimePeriod(time, period)
 }

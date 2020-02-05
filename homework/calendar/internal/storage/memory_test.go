@@ -126,7 +126,7 @@ func TestMemoryStorage_GetByTimePeriod(t *testing.T) {
 	}
 	ms := createMemoryStorage(t)
 
-	filtered, err := ms.GetByTimePeriod(events[0].StartTime, Week)
+	filtered, err := ms.GetByTimePeriod(events[0].StartTime, event.Week)
 	assert.Nil(t, err, "Method should return no error")
 	assert.ElementsMatch(t, getTests.expected, filtered, "Events should match")
 }
