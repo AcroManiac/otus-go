@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/AcroManiac/otus-go/homework/calendar/internal/storage"
 	"log"
 	"net/http"
 	"os"
@@ -42,7 +43,7 @@ func init() {
 
 func main() {
 	// Create calendar
-	var cal calendar.Calendar = calendar.NewCalendar()
+	cal := calendar.NewCalendar(storage.NewStorage())
 
 	// Create and add event
 	if _, err := cal.CreateEvent(time.Now(), time.Now().Add(time.Hour)); err != nil {

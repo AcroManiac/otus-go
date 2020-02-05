@@ -47,7 +47,7 @@ var events = []event.Event{
 
 // Factory for calendar. Build and populate with events
 func createCalendar(t *testing.T) Calendar {
-	cal := NewCalendar(storage.NewMemoryStorage())
+	cal := NewCalendar(storage.NewStorage())
 	for _, e := range events {
 		if _, err := cal.CreateEvent(e.StartTime, e.StopTime); err != nil {
 			t.Errorf("Couldn't populate with event: %s", err.Error())

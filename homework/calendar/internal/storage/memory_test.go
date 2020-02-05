@@ -47,7 +47,8 @@ var events = []event.Event{
 
 // Factory for memory storage. Build and populate with events
 func createMemoryStorage(t *testing.T) *MemoryStorage {
-	ms := NewMemoryStorage()
+	// Create not interface but object to get access for non-public functions
+	ms := &MemoryStorage{events: make(map[event.IdType]event.Event)}
 	for _, e := range events {
 		if _, err := ms.Add(e); err != nil {
 			t.Errorf("Couldn't populate with event: %s", err.Error())

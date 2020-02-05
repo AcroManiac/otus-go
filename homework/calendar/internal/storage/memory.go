@@ -11,7 +11,7 @@ type MemoryStorage struct {
 	events map[event.IdType]event.Event
 }
 
-func NewMemoryStorage() *MemoryStorage {
+func NewStorage() Storage {
 	return &MemoryStorage{events: make(map[event.IdType]event.Event)}
 }
 
