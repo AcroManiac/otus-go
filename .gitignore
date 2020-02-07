@@ -1,2 +1,4 @@
 .idea
 **/homework/**/go.sum
+/homework/calendar/cmd/calendar.log
+/sandbox/
