@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/AcroManiac/otus-go/homework/hw-3-1/gotelnet"
@@ -22,6 +24,8 @@ var Usage = func() {
 	flag.PrintDefaults()
 }
 
+// Test program with command
+// go run main.go -timeout=10m 192.168.1.1 23
 func main() {
 	flag.Usage = Usage
 	flag.Parse()
@@ -40,11 +44,42 @@ func main() {
 
 	// Make running context
 	ctx := context.Background()
-	ctx, _ /*cancel*/ = context.WithTimeout(ctx, ctxTimeout)
+	ctx, cancel := context.WithTimeout(ctx, ctxTimeout)
 
 	// Create telnet client
 	client := gotelnet.NewTelnetClient(host, port)
 	if err := client.Connect(ctx); err != nil {
 		log.Fatalf("Error connecting: %v", err)
+	}
+
+	// Set interrupt handler
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		if err := client.Receive(ctx); err != nil {
+			log.Println(err)
+			cancel()
+		}
+	}()
+	go func() {
+		if err := client.Send(ctx); err != nil {
+			log.Println(err)
+			cancel()
+		}
+	}()
+
+	// Wait for interruption events
+	select {
+	case <-ctx.Done():
+		log.Println("Program exited")
+	case <-done:
+		cancel()
+		log.Println("User interrupted program. Bye!")
+	}
+
+	// Make connection shutdown
+	if err := client.Close(); err != nil {
+		log.Printf("Error while closing connection: %v", err)
 	}
 }
