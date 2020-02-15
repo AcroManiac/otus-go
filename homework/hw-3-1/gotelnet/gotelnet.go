@@ -5,8 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net"
-	"os"
 )
 
 type Client struct {
@@ -14,14 +14,18 @@ type Client struct {
 	port   string
 	dialer *net.Dialer
 	conn   net.Conn
+	input  io.Reader
+	output io.Writer
 }
 
-func NewTelnetClient(host, port string) *Client {
+func NewTelnetClient(host, port string, input io.Reader, output io.Writer) *Client {
 	return &Client{
 		host:   host,
 		port:   port,
 		dialer: nil,
 		conn:   nil,
+		input:  input,
+		output: output,
 	}
 }
 
@@ -38,7 +42,7 @@ func (c *Client) Connect(ctx context.Context) error {
 }
 
 func (c *Client) Send(ctx context.Context) (err error) {
-	scanner := bufio.NewScanner(os.Stdin)
+	scanner := bufio.NewScanner(c.input)
 OUTER:
 	for {
 		select {
@@ -62,7 +66,7 @@ OUTER:
 }
 
 func (c *Client) Receive(ctx context.Context) (err error) {
-	writer := bufio.NewWriter(os.Stdout)
+	writer := bufio.NewWriter(c.output)
 	scanner := bufio.NewScanner(c.conn)
 OUTER:
 	for {

@@ -47,7 +47,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(ctx, ctxTimeout)
 
 	// Create telnet client
-	client := gotelnet.NewTelnetClient(host, port)
+	client := gotelnet.NewTelnetClient(host, port, os.Stdin, os.Stdout)
 	if err := client.Connect(ctx); err != nil {
 		log.Fatalf("Error connecting: %v", err)
 	}
