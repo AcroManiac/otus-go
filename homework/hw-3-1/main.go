@@ -59,14 +59,14 @@ func main() {
 	go func() {
 		if err := client.Receive(ctx); err != nil {
 			log.Println(err)
-			cancel()
 		}
+		cancel()
 	}()
 	go func() {
 		if err := client.Send(ctx); err != nil {
 			log.Println(err)
-			cancel()
 		}
+		cancel()
 	}()
 
 	// Wait for interruption events
