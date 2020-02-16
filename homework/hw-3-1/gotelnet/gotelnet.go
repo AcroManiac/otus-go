@@ -3,7 +3,6 @@ package gotelnet
 import (
 	"bufio"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -50,18 +49,15 @@ OUTER:
 			break OUTER
 		default:
 			if !scanner.Scan() {
-				err = errors.New("cancel scanning user input")
 				break OUTER
 			}
 			str := scanner.Text()
-			//log.Printf("To server %v\n", str)
 
 			if _, err = c.conn.Write([]byte(fmt.Sprintf("%s\n", str))); err != nil {
 				break OUTER
 			}
 		}
 	}
-	//log.Printf("Finished Send")
 	return
 }
 
@@ -75,14 +71,12 @@ OUTER:
 			break OUTER
 		default:
 			if !scanner.Scan() {
-				err = errors.New("cancel scanning network connection")
 				break OUTER
 			}
-			writer.WriteString(scanner.Text())
-			writer.Flush()
+			_, _ = writer.WriteString(scanner.Text())
+			_ = writer.Flush()
 		}
 	}
-	//log.Printf("Finished Receive")
 	return
 }
 
