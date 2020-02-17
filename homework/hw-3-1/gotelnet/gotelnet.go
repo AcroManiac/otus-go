@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"time"
 )
 
 type Client struct {
@@ -29,7 +30,7 @@ func NewTelnetClient(host, port string, input io.Reader, output io.Writer) *Clie
 }
 
 func (c *Client) Connect(ctx context.Context) error {
-	c.dialer = &net.Dialer{}
+	c.dialer = &net.Dialer{Timeout: 10 * time.Second}
 
 	var err error
 	c.conn, err = c.dialer.DialContext(ctx, "tcp",
