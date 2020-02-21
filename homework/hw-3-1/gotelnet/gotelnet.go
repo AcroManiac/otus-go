@@ -75,6 +75,7 @@ OUTER:
 				break OUTER
 			}
 			_, _ = writer.WriteString(scanner.Text())
+			_, _ = writer.WriteString("\n")
 			_ = writer.Flush()
 		}
 	}
