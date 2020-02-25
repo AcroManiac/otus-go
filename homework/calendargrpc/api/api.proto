@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+option go_package = "api";
+
+import "event.proto";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+message CreateEventRequest {
+    string title = 1;
+    string description = 2;
+    reserved 3; reserved "owner";
+    google.protobuf.Timestamp start_time = 4;
+    google.protobuf.Duration duration = 5;
+    reserved 6; reserved "notify";
+}
+
+message CreateEventResponse {
+    oneof result {
+        Event event = 1;
+        string error = 2;
+    }
+}
+
+message EditEventRequest {
+    string id = 1;
+    Event event = 2;
+}
+
+message EditEventResponse {
+    string error = 1;
+}
+
+message DeleteEventRequest {
+    string id = 1;
+}
+
+message DeleteEventResponse {
+    string error = 1;
+}
+
+enum TimePeriod {
+    TIME_UNKNOWN = 0;   // Void business logic rule
+    TIME_DAY = 1;
+    TIME_WEEK = 2;
+    TIME_MONTH = 3;
+}
+
+message GetEventsRequest {
+    TimePeriod period = 1;
+    google.protobuf.Timestamp start_time = 2;
+}
+
+message GetEventsResponse {
+    repeated Event events = 1;
+    string error = 2;
+}
+
+service CalendarApi {
+    rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse) {};
+    rpc EditEvent(EditEventRequest) returns (EditEventResponse) {};
+    rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse) {};
+    rpc GetEvents(GetEventsRequest) returns (GetEventsResponse) {};
+}
