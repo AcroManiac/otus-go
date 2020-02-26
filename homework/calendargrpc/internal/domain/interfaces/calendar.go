@@ -12,7 +12,7 @@ type Calendar interface {
 	// CreateEvent function constructs new event with default values
 	// and adds it to event storage. Returns Id of generated event or
 	// storage error if any
-	CreateEvent(startTime time.Time, stopTime time.Time) (entities.IdType, error)
+	CreateEvent(title, description string, startTime time.Time, duration time.Duration) (entities.IdType, error)
 
 	// EditEvent finds event in storage by Id and replaces it
 	// with event in parameters. Returns error if event Id is wrong
