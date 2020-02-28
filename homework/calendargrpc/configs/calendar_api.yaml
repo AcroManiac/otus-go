@@ -1,0 +1,13 @@
+---
+db:
+  user: "dbuser"
+  password: "En9NR2b869"
+  host: "127.0.0.1"
+  port: 5432
+  database: "calendar"
+http_listen:
+  ip: "0.0.0.0"
+  port: 9000
+log:
+  log_file: ./calendar.log
+  log_level: debug
