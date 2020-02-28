@@ -61,6 +61,11 @@ func Init(logLevel, filePath string) {
 	})
 }
 
+// Get ordinary logger
+func GetLogger() *zap.Logger {
+	return sugar.Desugar()
+}
+
 // Debug logs a debug message with the given fields
 func Debug(message string, fields ...interface{}) {
 	sugar.Debugw(message, fields...)
