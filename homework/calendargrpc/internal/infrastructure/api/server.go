@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
+	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
 	"time"
 
@@ -18,6 +20,8 @@ func NewCalendarApiServer(cal interfaces.Calendar) CalendarApiServer {
 
 func (c *CalendarApiServerImpl) CreateEvent(
 	ctx context.Context, request *CreateEventRequest) (*CreateEventResponse, error) {
+	logger.Debug("Received CreateEvent request", "content", request.String())
+
 	// Convert time from gRPC representation
 	var startTime time.Time
 	if request.GetStartTime() != nil {
@@ -25,7 +29,7 @@ func (c *CalendarApiServerImpl) CreateEvent(
 		if err != nil {
 			return nil, err
 		}
-		startTime = &st
+		startTime = st
 	}
 
 	var duration time.Duration
@@ -34,7 +38,7 @@ func (c *CalendarApiServerImpl) CreateEvent(
 		if err != nil {
 			return nil, err
 		}
-		duration = &d
+		duration = d
 	}
 
 	// Create new calendar event
@@ -50,12 +54,13 @@ func (c *CalendarApiServerImpl) CreateEvent(
 				Error: err.Error(),
 			},
 		}
+		logger.Error("error creating new calendar event", "error", err)
 		return response, err
 	}
 
 	// Create output protobuf message
 	message := &Event{
-		Id:          id,
+		Id:          uuid.UUID(id).String(),
 		Title:       request.GetTitle(),
 		Description: request.GetDescription(),
 		Owner:       "",
@@ -70,6 +75,7 @@ func (c *CalendarApiServerImpl) CreateEvent(
 			Event: message,
 		},
 	}
+	logger.Debug("Sending CreateEvent response", "content", response.String())
 	return response, nil
 }
 
