@@ -20,7 +20,7 @@ type Storage struct {
 func NewDatabaseStorage(ctx context.Context, user, password, host, database string, port int) interfaces.Storage {
 	conn := NewDatabaseConnection(user, password, host, database, port)
 	if err := conn.Init(ctx); err != nil {
-		logger.Fatal("Unable to connect to database", "error", err)
+		logger.Fatal("unable to connect to database", "error", err)
 	}
 	return &Storage{ctx: ctx, conn: conn}
 }

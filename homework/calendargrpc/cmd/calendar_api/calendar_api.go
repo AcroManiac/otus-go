@@ -3,11 +3,15 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/api"
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/database"
+	"google.golang.org/grpc"
 	"log"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/logic"
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
@@ -39,36 +43,50 @@ func main() {
 	//trace.Start(os.Stderr)
 	//defer trace.Stop()
 
+	// Create cancel context
+	ctx, cancel := context.WithCancel(context.Background())
+
 	// Create database connection
+	storage := database.NewDatabaseStorage(ctx,
+		viper.GetString("db.user"),
+		viper.GetString("db.password"),
+		viper.GetString("db.host"),
+		viper.GetString("db.database"),
+		viper.GetInt("db.port"))
 
 	// Create calendar
-	cal := logic.NewCalendar(storage.NewStorage())
-	logger.Info("Calendar was created")
+	cal := logic.NewCalendar(storage)
+	logger.Info("Calendar business logic created")
 
 	// Initialize and start gRPC server
+	lis, err := net.Listen("tcp",
+		fmt.Sprintf("%s:%d", viper.GetString("grpc_listen.ip"), viper.GetInt("grpc_listen.port")))
+	if err != nil {
+		logger.Fatal("failed to listen tcp", "error", err)
+	}
+	grpcServer := grpc.NewServer()
+	api.RegisterCalendarApiServer(grpcServer, api.NewCalendarApiServer(cal))
 
 	// Set interrupt handler
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
+	// Listen gRPC server
 	go func() {
-		//// Listen gRPC server
-		//if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		//	logger.Fatal("Error while starting gRPC server", "error", err)
-		//}
+		if err := grpcServer.Serve(lis); err != nil {
+			logger.Fatal("error while starting gRPC server", "error", err)
+		}
 	}()
 	logger.Info("gRPC server started")
 
+	// Wait for user or OS interrupt
 	<-done
-	logger.Info("gRPC server stopped")
 
-	/*ctx*/
-	_, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	// Make gRPC server graceful shutdown
+	grpcServer.GracefulStop()
+	logger.Info("gRPC server stopped gracefully")
 
-	//// Make gRPC server graceful shutdown
-	//if err := srv.Shutdown(ctx); err != nil {
-	//	logger.Fatal("gRPC server shutdown failed", "error", err)
-	//}
-	logger.Info("gRPC server exited properly")
+	// Call context to stop i/o operations
+	cancel()
+	logger.Info("Application exited properly")
 }
