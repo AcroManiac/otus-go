@@ -39,6 +39,7 @@ func (s Storage) isExistTime(time time.Time, owner string) (entities.IdType, boo
 	if err != nil {
 		return id, false, errors.Wrap(err, "error finding record in database")
 	}
+	defer rows.Close()
 
 	l, err := rows.Values()
 	if err != nil {
@@ -160,6 +161,7 @@ func (s Storage) GetEventsByTimePeriod(period entities.TimePeriod, t time.Time) 
 	if err != nil {
 		return nil, errors.Wrap(err, "error selecting records from database")
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var id string
