@@ -29,7 +29,7 @@ func (i *Impl) CreateEvent(title, description string, startTime time.Time, durat
 
 	id, err := i.storage.Add(newEvent)
 	if err != nil {
-		logger.Error("Error adding event to storage", "error", err)
+		logger.Error("error adding event to storage", "error", err)
 		return id, err
 	}
 
