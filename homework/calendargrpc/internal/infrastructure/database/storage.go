@@ -41,17 +41,25 @@ func (s Storage) isExistTime(time time.Time, owner string) (entities.IdType, boo
 	}
 	defer rows.Close()
 
-	l, err := rows.Values()
-	if err != nil {
-		return id, false, errors.Wrap(err, "error getting values from records")
-	}
-	if len(l) == 0 {
-		// Time does not exist
-		return id, false, nil
+	if rows.Next() {
+		// Found specified time
+		return id, true, nil
 	}
 
-	// Found specified time
-	return id, true, nil
+	// Time does not exist
+	return id, false, nil
+
+	//l, err := rows.Values()
+	//if err != nil {
+	//	return id, false, errors.Wrap(err, "error getting values from records")
+	//}
+	//if len(l) == 0 {
+	//	// Time does not exist
+	//	return id, false, nil
+	//}
+	//
+	//// Found specified time
+	//return id, true, nil
 }
 
 func (s *Storage) Add(ev entities.Event) (entities.IdType, error) {
@@ -60,11 +68,9 @@ func (s *Storage) Add(ev entities.Event) (entities.IdType, error) {
 	if err != nil {
 		return id, err
 	}
-	if !ok {
+	if ok {
 		return id, entities.ErrTimeBusy
 	}
-
-	//id := entities.IdType(uuid.New())
 
 	// Get connection from pool
 	conn, err := s.conn.Get(s.ctx)
@@ -73,11 +79,12 @@ func (s *Storage) Add(ev entities.Event) (entities.IdType, error) {
 	}
 
 	// Insert new record to database
+	id = entities.IdType(uuid.New())
 	_, err = conn.Exec(
 		s.ctx,
 		"insert into events(id, title, description, owner, start_time, duration, notify) "+
 			"values ($1, $2, $3, $4, $5, $6, $7);",
-		ev.Id, ev.Title, ev.Description, ev.Owner, ev.StartTime, ev.Duration, ev.Notify,
+		uuid.UUID(id), ev.Title, ev.Description, ev.Owner, ev.StartTime, ev.Duration, ev.Notify,
 	)
 	if err != nil {
 		return id, errors.Wrap(err, "error inserting new record to database")
