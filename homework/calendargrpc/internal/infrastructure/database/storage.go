@@ -64,6 +64,13 @@ func (s Storage) isExistTime(time time.Time, owner string) (entities.IdType, boo
 	//return id, true, nil
 }
 
+func ToInterval(d *time.Duration) interface{} {
+	if d == nil {
+		return nil
+	}
+	return fmt.Sprintf("%d ms", d.Milliseconds())
+}
+
 func (s *Storage) Add(ev entities.Event) (entities.IdType, error) {
 	// Check if event time is occupied already
 	id, ok, err := s.isExistTime(ev.StartTime, ev.Owner)
@@ -83,12 +90,12 @@ func (s *Storage) Add(ev entities.Event) (entities.IdType, error) {
 
 	// Insert new record to database
 	id = entities.IdType(uuid.New())
-	duration := fmt.Sprintf("%d s", ev.Duration/1000000000)
 	_, err = conn.Exec(
 		s.ctx,
 		"insert into events(id, title, description, owner, start_time, duration, notify) "+
 			"values ($1, $2, $3, $4, $5, $6, $7);",
-		uuid.UUID(id), ev.Title, ev.Description, ev.Owner, ev.StartTime, duration, ev.Notify,
+		uuid.UUID(id), ev.Title, ev.Description, ev.Owner, ev.StartTime,
+		ToInterval(&ev.Duration), ToInterval(ev.Notify),
 	)
 	if err != nil {
 		return id, errors.Wrap(err, "error inserting new record to database")
