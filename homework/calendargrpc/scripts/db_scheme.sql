@@ -3,6 +3,8 @@ set timezone = 'Europe/Moscow';
 create user dbuser with encrypted password 'En9NR2b869';
 
 create database calendar owner dbuser;
+grant all privileges on database calendar to dbuser;
+grant all privileges on all tables in schema public to dbuser;
 
 \connect calendar
 create table events (
@@ -16,5 +18,3 @@ create table events (
 );
 
 create index start_time_idx on events using btree (start_time);
-
-grant all privileges on database calendar to dbuser;
