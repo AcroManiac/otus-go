@@ -9,5 +9,5 @@ grpc_listen:
   ip: "0.0.0.0"
   port: 50051
 log:
-  log_file: ./calendar.log
+  log_file: ./calendar_api.log
   log_level: debug
