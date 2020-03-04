@@ -4,14 +4,16 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/api"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/database"
-	"google.golang.org/grpc"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/api"
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/database"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/logic"
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
@@ -66,6 +68,9 @@ func main() {
 	}
 	grpcServer := grpc.NewServer()
 	api.RegisterCalendarApiServer(grpcServer, api.NewCalendarApiServer(cal))
+
+	// Register reflection service on gRPC server.
+	reflection.Register(grpcServer)
 
 	// Set interrupt handler
 	done := make(chan os.Signal, 1)
