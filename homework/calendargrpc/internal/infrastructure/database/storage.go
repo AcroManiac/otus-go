@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
@@ -33,6 +34,7 @@ func (s Storage) isExistTime(time time.Time, owner string) (entities.IdType, boo
 	if err != nil {
 		return id, false, err
 	}
+	defer conn.Release()
 
 	// Find record in database
 	rows, err := conn.Query(s.ctx, "select id from events where start_time=$1 and owner=$2", time, owner)
@@ -77,14 +79,16 @@ func (s *Storage) Add(ev entities.Event) (entities.IdType, error) {
 	if err != nil {
 		return id, err
 	}
+	defer conn.Release()
 
 	// Insert new record to database
 	id = entities.IdType(uuid.New())
+	duration := fmt.Sprintf("%d s", ev.Duration/1000000000)
 	_, err = conn.Exec(
 		s.ctx,
 		"insert into events(id, title, description, owner, start_time, duration, notify) "+
 			"values ($1, $2, $3, $4, $5, $6, $7);",
-		uuid.UUID(id), ev.Title, ev.Description, ev.Owner, ev.StartTime, ev.Duration, ev.Notify,
+		uuid.UUID(id), ev.Title, ev.Description, ev.Owner, ev.StartTime, duration, ev.Notify,
 	)
 	if err != nil {
 		return id, errors.Wrap(err, "error inserting new record to database")
@@ -99,6 +103,7 @@ func (s *Storage) Remove(id entities.IdType) error {
 	if err != nil {
 		return err
 	}
+	defer conn.Release()
 
 	// Delete record from database
 	_, err = conn.Exec(s.ctx, "delete from events where id=$1", id)
@@ -124,6 +129,7 @@ func (s *Storage) Edit(id entities.IdType, ev entities.Event) error {
 	if err != nil {
 		return err
 	}
+	defer conn.Release()
 
 	// Update record in database
 	_, err = conn.Exec(s.ctx,
@@ -160,6 +166,7 @@ func (s Storage) GetEventsByTimePeriod(period entities.TimePeriod, t time.Time) 
 	if err != nil {
 		return nil, err
 	}
+	defer conn.Release()
 
 	// Select records from database
 	rows, err := conn.Query(s.ctx,
