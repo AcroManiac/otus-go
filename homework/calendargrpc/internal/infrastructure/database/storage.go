@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -113,7 +114,7 @@ func (s *Storage) Remove(id entities.IdType) error {
 	defer conn.Release()
 
 	// Delete record from database
-	_, err = conn.Exec(s.ctx, "delete from events where id=$1", id)
+	_, err = conn.Exec(s.ctx, "delete from events where id=$1", uuid.UUID(id))
 	if err != nil {
 		return errors.Wrap(err, "error deleting record from database")
 	}
@@ -187,11 +188,11 @@ func (s Storage) GetEventsByTimePeriod(period entities.TimePeriod, t time.Time) 
 	for rows.Next() {
 		var id string
 		var title string
-		var description string
+		var description sql.NullString
 		var owner string
 		var start_time time.Time
 		var duration time.Duration
-		var notify time.Duration
+		var notify sql.NullString //time.Duration
 		err := rows.Scan(
 			&id, &title, &description, &owner,
 			&start_time, &duration, &notify)
@@ -202,13 +203,27 @@ func (s Storage) GetEventsByTimePeriod(period entities.TimePeriod, t time.Time) 
 		// Add data to result slice
 		uid, _ := uuid.Parse(id)
 		selected = append(selected, entities.Event{
-			Id:          entities.IdType(uid),
-			Title:       title,
-			StartTime:   start_time,
-			Duration:    duration,
-			Description: &description,
-			Owner:       owner,
-			Notify:      &notify,
+			Id:        entities.IdType(uid),
+			Title:     title,
+			StartTime: start_time,
+			Duration:  duration,
+			Description: func(ns *sql.NullString) *string {
+				if ns.Valid {
+					return &ns.String
+				}
+				return nil
+			}(&description),
+			Owner: owner,
+			Notify: func(ns *sql.NullString) *time.Duration {
+				if ns.Valid {
+					dur, err := time.ParseDuration(ns.String)
+					if err != nil {
+						return nil
+					}
+					return &dur
+				}
+				return nil
+			}(&description),
 		})
 	}
 
