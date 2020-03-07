@@ -59,17 +59,90 @@ func main() {
 	startTime, err := ptypes.TimestampProto(
 		time.Date(2020, 3, 11, 20, 0, 0, 0, loc))
 	if err != nil {
-		logger.Error("error converting timestamp", "error", err)
+		logger.Fatal("error converting timestamp", "error", err)
 	}
-	_, err = grpcClient.CreateEvent(ctx, &api.CreateEventRequest{
+
+	// Send create event request to gRPC server
+	createResponse, err := grpcClient.CreateEvent(ctx, &api.CreateEventRequest{
 		Title:       "Срок сдачи ДЗ",
 		Description: "Срок сдачи домашнего задания №22",
 		StartTime:   startTime,
 		Duration:    ptypes.DurationProto(time.Hour),
 	})
 	if err != nil {
-		logger.Error("failed sending CreateEvent", "error", err)
+		logger.Fatal("failed sending CreateEvent request", "error", err)
 	}
+
+	// Get new event id from gRPC response
+	respEvent := createResponse.GetEvent()
+	if respEvent == nil {
+		logger.Fatal("response returned no event")
+	}
+	logger.Debug("Event created in calendar")
+
+	id := respEvent.GetId()
+
+	// Send edit event request
+	startTime, err = ptypes.TimestampProto(
+		time.Date(2020, 3, 11, 12, 0, 0, 0, loc))
+	if err != nil {
+		logger.Fatal("error converting timestamp", "error", err)
+	}
+	_, err = grpcClient.EditEvent(ctx, &api.EditEventRequest{
+		Id: id,
+		Event: &api.Event{
+			Id:          id,
+			Title:       respEvent.GetTitle(),
+			Description: respEvent.GetDescription(),
+			Owner:       respEvent.GetOwner(),
+			StartTime:   startTime,                           // change start time
+			Duration:    ptypes.DurationProto(2 * time.Hour), // and duration
+			Notify:      respEvent.GetNotify(),
+		},
+	})
+	if err != nil {
+		logger.Fatal("failed sending EditEvent request", "error", err)
+	}
+	logger.Debug("Event edited in calendar")
+
+	// Get events from gRPC server
+	searchTime, err := ptypes.TimestampProto(
+		time.Date(2020, 3, 11, 10, 0, 0, 0, loc))
+	if err != nil {
+		logger.Fatal("error converting timestamp", "error", err)
+	}
+	searchResponse, err := grpcClient.GetEvents(ctx, &api.GetEventsRequest{
+		Period:    api.TimePeriod_TIME_DAY,
+		StartTime: searchTime,
+	})
+	if err != nil {
+		logger.Fatal("failed sending GetEvents request", "error", err)
+	}
+
+	// Get events from response
+	events := searchResponse.GetEvents()
+	if events == nil {
+		logger.Info("response returned no event")
+	}
+	for _, ev := range events {
+		logger.Info("returned event",
+			"id", ev.Id,
+			"title", ev.Title,
+			"description", ev.Description,
+			"owner", ev.Owner,
+			"start_time", ev.StartTime,
+			"duration", ev.Duration,
+			"notify", ev.Notify)
+	}
+
+	// Delete event through gRPC request
+	_, err = grpcClient.DeleteEvent(ctx, &api.DeleteEventRequest{
+		Id: id,
+	})
+	if err != nil {
+		logger.Fatal("failed sending DeleteEvent request", "error", err)
+	}
+	logger.Debug("Event deleted successfully")
 
 	logger.Info("Client exited")
 }
