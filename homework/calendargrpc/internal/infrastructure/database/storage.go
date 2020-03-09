@@ -46,6 +46,10 @@ func (s Storage) isExistTime(time time.Time, owner string) (entities.IdType, boo
 
 	if rows.Next() {
 		// Found specified time
+		var storedId uuid.UUID
+		if err = rows.Scan(&storedId); err == nil {
+			id = entities.IdType(storedId)
+		}
 		return id, true, nil
 	}
 
