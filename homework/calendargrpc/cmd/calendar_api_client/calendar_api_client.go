@@ -83,7 +83,7 @@ func main() {
 	id := respEvent.GetId()
 
 	// Send edit event request
-	startTime, err = ptypes.TimestampProto(
+	newTime, err := ptypes.TimestampProto(
 		time.Date(2020, 3, 11, 12, 0, 0, 0, loc))
 	if err != nil {
 		logger.Fatal("error converting timestamp", "error", err)
@@ -93,9 +93,9 @@ func main() {
 		Event: &api.Event{
 			Id:          id,
 			Title:       respEvent.GetTitle(),
-			Description: respEvent.GetDescription(),
+			Description: respEvent.GetDescription() + " (изменено)",
 			Owner:       respEvent.GetOwner(),
-			StartTime:   startTime,                           // change start time
+			StartTime:   newTime,                             // change start time
 			Duration:    ptypes.DurationProto(2 * time.Hour), // and duration
 			Notify:      respEvent.GetNotify(),
 		},

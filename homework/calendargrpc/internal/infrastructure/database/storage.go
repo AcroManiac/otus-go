@@ -51,18 +51,6 @@ func (s Storage) isExistTime(time time.Time, owner string) (entities.IdType, boo
 
 	// Time does not exist
 	return id, false, nil
-
-	//l, err := rows.Values()
-	//if err != nil {
-	//	return id, false, errors.Wrap(err, "error getting values from records")
-	//}
-	//if len(l) == 0 {
-	//	// Time does not exist
-	//	return id, false, nil
-	//}
-	//
-	//// Found specified time
-	//return id, true, nil
 }
 
 func ToInterval(d *time.Duration) interface{} {
@@ -123,12 +111,12 @@ func (s *Storage) Remove(id entities.IdType) error {
 }
 
 func (s *Storage) Edit(id entities.IdType, ev entities.Event) error {
-	// Check if event time is occupied already
-	_, ok, err := s.isExistTime(ev.StartTime, ev.Owner)
+	// Check if event time is occupied already by other event
+	existId, ok, err := s.isExistTime(ev.StartTime, ev.Owner)
 	if err != nil {
 		return err
 	}
-	if !ok {
+	if ok && existId != id {
 		return entities.ErrTimeBusy
 	}
 
@@ -143,7 +131,8 @@ func (s *Storage) Edit(id entities.IdType, ev entities.Event) error {
 	_, err = conn.Exec(s.ctx,
 		"update events set title=$1, description=$2, owner=$3, start_time=$4, duration=$5, notify=$6 "+
 			"where id=$7",
-		ev.Title, ev.Description, ev.Owner, ev.StartTime, ev.Duration, ev.Notify, id,
+		ev.Title, ev.Description, ev.Owner, ev.StartTime,
+		ToInterval(&ev.Duration), ToInterval(ev.Notify), uuid.UUID(id),
 	)
 	if err != nil {
 		return errors.Wrap(err, "error updating record in database")
