@@ -1,8 +1,11 @@
 package logic
 
 import (
+	"sync"
 	"testing"
 	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/entities"
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/interfaces"
@@ -48,7 +51,7 @@ var events = []entities.Event{
 
 // Factory for calendar. Build and populate with events
 func createCalendar(t *testing.T) interfaces.Calendar {
-	cal := NewCalendar(nil) //storage.NewStorage())
+	cal := NewCalendar(NewMemoryStorage())
 	for _, e := range events {
 		if _, err := cal.CreateEvent(e.Title, *e.Description, e.StartTime, e.Duration); err != nil {
 			t.Errorf("Couldn't populate with event: %s", err.Error())
@@ -101,4 +104,106 @@ func TestImpl_GetEventsByTimePeriod(t *testing.T) {
 	filtered, err := cal.GetEventsByTimePeriod(entities.Week, events[0].StartTime)
 	assert.Nil(t, err, "Method should return no error")
 	assert.NotEmpty(t, filtered, "Returned slice should not be empty")
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+type MemoryStorage struct {
+	mu     sync.RWMutex
+	events map[entities.IdType]entities.Event
+}
+
+func NewMemoryStorage() interfaces.Storage {
+	return &MemoryStorage{events: make(map[entities.IdType]entities.Event)}
+}
+
+// isExistTime is checking event time existence in map.
+// Used for unit testing purposes also
+func (ms MemoryStorage) isExistTime(time time.Time) (entities.IdType, bool) {
+	ms.mu.RLock()
+	defer ms.mu.RUnlock()
+	for id, e := range ms.events {
+		if e.StartTime == time {
+			return id, true
+		}
+	}
+	return entities.IdType(uuid.UUID{}), false
+}
+
+// isExistId is checking event existence in map by Id.
+func (ms MemoryStorage) isExistId(id entities.IdType) bool {
+	ms.mu.RLock()
+	defer ms.mu.RUnlock()
+	_, ok := ms.events[id]
+	return ok
+}
+
+func (ms *MemoryStorage) Add(ev entities.Event) (entities.IdType, error) {
+	if _, ok := ms.isExistTime(ev.StartTime); ok {
+		return entities.IdType(uuid.UUID{}), entities.ErrTimeBusy
+	}
+	id := entities.IdType(uuid.New())
+
+	ms.mu.Lock()
+	ms.events[id] = ev
+	ms.mu.Unlock()
+
+	return id, nil
+}
+
+func (ms *MemoryStorage) Remove(id entities.IdType) error {
+	if !ms.isExistId(id) {
+		return entities.ErrNotFoundEvent
+	}
+
+	ms.mu.Lock()
+	delete(ms.events, id)
+	ms.mu.Unlock()
+
+	return nil
+}
+
+func (ms *MemoryStorage) Edit(id entities.IdType, ev entities.Event) error {
+	// Check input data for errors
+	if !ms.isExistId(id) {
+		return entities.ErrNotFoundEvent
+	}
+	if _, ok := ms.isExistTime(ev.StartTime); ok {
+		return entities.ErrTimeBusy
+	}
+
+	ms.mu.Lock()
+	ms.events[id] = ev
+	ms.mu.Unlock()
+
+	return nil
+}
+
+func (ms MemoryStorage) GetEventsByTimePeriod(period entities.TimePeriod, t time.Time) ([]entities.Event, error) {
+	var selected []entities.Event
+	var startTime, stopTime time.Time
+
+	// Calculate start and stop times for searching interval
+	switch period {
+	case entities.Day:
+		startTime = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+		stopTime = startTime.Add(24 * time.Hour)
+	case entities.Month:
+		startTime = time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location())
+		stopTime = startTime.AddDate(0, 1, 0)
+	case entities.Week:
+		startTime = t.AddDate(0, 0, -int(t.Weekday()))
+		stopTime = startTime.AddDate(0, 0, 7)
+	}
+
+	// Iterate through map to find matching events
+	ms.mu.RLock()
+	defer ms.mu.RUnlock()
+	for _, e := range ms.events {
+		if e.StartTime.After(startTime) && e.StartTime.Before(stopTime) {
+			selected = append(selected, e)
+		}
+	}
+
+	return selected, nil
 }
