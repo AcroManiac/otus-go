@@ -65,6 +65,9 @@ func Init(logLevel, filePath string) {
 
 // Get ordinary logger
 func GetLogger() *zap.Logger {
+	if sugar == nil {
+		return nil
+	}
 	return sugar.Desugar()
 }
 

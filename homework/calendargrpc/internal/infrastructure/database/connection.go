@@ -3,11 +3,11 @@ package database
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgx/v4/log/zapadapter"
 	"net"
 	"time"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
-	"github.com/jackc/pgx/v4/log/zapadapter"
 	"github.com/pkg/errors"
 
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -38,11 +38,14 @@ func (c *Connection) Init(ctx context.Context) error {
 	cfg.ConnConfig.TLSConfig = nil
 	cfg.ConnConfig.PreferSimpleProtocol = true
 	cfg.ConnConfig.RuntimeParams["standard_conforming_strings"] = "on"
-	cfg.ConnConfig.Logger = zapadapter.NewLogger(logger.GetLogger())
 	cfg.ConnConfig.DialFunc = (&net.Dialer{
 		Timeout:   1 * time.Second,
 		KeepAlive: 5 * time.Minute,
 	}).DialContext
+
+	if logger.GetLogger() != nil {
+		cfg.ConnConfig.Logger = zapadapter.NewLogger(logger.GetLogger())
+	}
 
 	pool, err := pgxpool.ConnectConfig(ctx, cfg)
 	if err != nil {
