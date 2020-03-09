@@ -171,7 +171,7 @@ func (s Storage) GetEventsByTimePeriod(period entities.TimePeriod, t time.Time) 
 
 	// Select records from database
 	rows, err := conn.Query(s.ctx,
-		"select * from events where start_time>=$1 and start_time<$2",
+		"select id, title, description, owner, start_time, duration, notify from events where start_time>=$1 and start_time<$2",
 		startTime, stopTime)
 	if err != nil {
 		return nil, errors.Wrap(err, "error selecting records from database")
@@ -179,7 +179,7 @@ func (s Storage) GetEventsByTimePeriod(period entities.TimePeriod, t time.Time) 
 	defer rows.Close()
 
 	for rows.Next() {
-		var id string
+		var id uuid.UUID
 		var title string
 		var description sql.NullString
 		var owner string
@@ -194,9 +194,8 @@ func (s Storage) GetEventsByTimePeriod(period entities.TimePeriod, t time.Time) 
 		}
 
 		// Add data to result slice
-		uid, _ := uuid.Parse(id)
 		selected = append(selected, entities.Event{
-			Id:        entities.IdType(uid),
+			Id:        entities.IdType(id),
 			Title:     title,
 			StartTime: start_time,
 			Duration:  duration,
