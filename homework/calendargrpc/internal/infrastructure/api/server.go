@@ -50,6 +50,7 @@ func (c *CalendarApiServerImpl) CreateEvent(
 	id, err := c.cal.CreateEvent(
 		request.GetTitle(),
 		request.GetDescription(),
+		request.GetOwner(),
 		startTime,
 		duration)
 	if err != nil {
@@ -68,7 +69,7 @@ func (c *CalendarApiServerImpl) CreateEvent(
 		Id:          uuid.UUID(id).String(),
 		Title:       request.GetTitle(),
 		Description: request.GetDescription(),
-		Owner:       "",
+		Owner:       request.GetOwner(),
 		StartTime:   request.GetStartTime(),
 		Duration:    request.GetDuration(),
 		Notify:      nil,

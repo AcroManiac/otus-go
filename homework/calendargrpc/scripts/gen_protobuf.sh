@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd api
+cd ../api
 
 # Generate event interface
 protoc event.proto --go_out=plugins=grpc:../internal/infrastructure/api

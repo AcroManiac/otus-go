@@ -16,14 +16,15 @@ func NewCalendar(storage interfaces.Storage) interfaces.Calendar {
 	return &Impl{storage: storage}
 }
 
-func (i *Impl) CreateEvent(title, description string, startTime time.Time, duration time.Duration) (entities.IdType, error) {
+func (i *Impl) CreateEvent(
+	title, description, owner string, startTime time.Time, duration time.Duration) (entities.IdType, error) {
 	// Create and add event
 	newEvent := entities.Event{
 		Title:       title,
 		StartTime:   startTime,
 		Duration:    duration,
 		Description: &description,
-		Owner:       "",
+		Owner:       owner,
 		Notify:      nil,
 	}
 

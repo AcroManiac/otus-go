@@ -10,7 +10,7 @@ import "google/protobuf/duration.proto";
 message CreateEventRequest {
     string title = 1;
     string description = 2;
-    reserved 3; reserved "owner";
+    string owner = 3;
     google.protobuf.Timestamp start_time = 4;
     google.protobuf.Duration duration = 5;
     reserved 6; reserved "notify";

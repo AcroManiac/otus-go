@@ -66,6 +66,7 @@ func main() {
 	createResponse, err := grpcClient.CreateEvent(ctx, &api.CreateEventRequest{
 		Title:       "Срок сдачи ДЗ",
 		Description: "Срок сдачи домашнего задания №22",
+		Owner:       "Артём",
 		StartTime:   startTime,
 		Duration:    ptypes.DurationProto(time.Hour),
 	})
