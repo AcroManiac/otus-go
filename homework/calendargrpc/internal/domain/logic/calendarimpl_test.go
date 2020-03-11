@@ -53,7 +53,7 @@ var events = []entities.Event{
 func createCalendar(t *testing.T) interfaces.Calendar {
 	cal := NewCalendar(NewMemoryStorage())
 	for _, e := range events {
-		if _, err := cal.CreateEvent(e.Title, *e.Description, e.StartTime, e.Duration); err != nil {
+		if _, err := cal.CreateEvent(e.Title, *e.Description, e.Owner, e.StartTime, e.Duration); err != nil {
 			t.Errorf("Couldn't populate with event: %s", err.Error())
 		}
 	}
@@ -71,7 +71,7 @@ func TestImpl_EditEvent(t *testing.T) {
 
 	// Create new event and add it to storage
 	id, err := cal.CreateEvent(
-		events[0].Title, *events[0].Description,
+		events[0].Title, *events[0].Description, events[0].Owner,
 		events[0].StartTime.Add(time.Hour), 30*time.Minute)
 	assert.Nil(t, err, "Error should be nil")
 
@@ -88,7 +88,7 @@ func TestImpl_DeleteEvent(t *testing.T) {
 
 	// Create new event and add it to storage
 	id, err := cal.CreateEvent(
-		events[0].Title, *events[0].Description,
+		events[0].Title, *events[0].Description, events[0].Owner,
 		events[0].StartTime.Add(time.Hour), 30*time.Minute)
 	assert.Nil(t, err, "Error should be nil")
 
