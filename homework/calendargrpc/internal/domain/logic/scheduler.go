@@ -14,8 +14,8 @@ type Scheduler struct {
 	wr        io.Writer
 }
 
-func NewScheduler(collector interfaces.EventsCollector) interfaces.Scheduler {
-	return &Scheduler{collector: collector}
+func NewScheduler(collector interfaces.EventsCollector, wr io.Writer) interfaces.Scheduler {
+	return &Scheduler{collector: collector, wr: wr}
 }
 
 func (s *Scheduler) Schedule() error {
@@ -33,11 +33,13 @@ func (s *Scheduler) Schedule() error {
 			Owner: ev.Owner,
 		}
 
+		// Convert notice to JSON
 		message, err := json.Marshal(notice)
 		if err != nil {
 			return errors.Wrap(err, "error converting JSON")
 		}
 
+		// Send message to RabbitMQ broker
 		n, err := s.wr.Write(message)
 		if err != nil || n != len(message) {
 			return errors.Wrap(err, "error sending message")

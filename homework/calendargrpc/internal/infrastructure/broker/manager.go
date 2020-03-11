@@ -2,6 +2,7 @@ package broker
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
@@ -14,7 +15,6 @@ const (
 )
 
 type Manager struct {
-	ServerId string
 	Protocol string
 	User     string
 	Password string
@@ -23,11 +23,11 @@ type Manager struct {
 	Conn     *amqp.Connection
 	Ch       *amqp.Channel
 	Que      amqp.Queue
+	wr       io.Writer
 }
 
-func NewManager(serverId, protocol, user, password, host string, port int) *Manager {
+func NewManager(protocol, user, password, host string, port int) *Manager {
 	return &Manager{
-		ServerId: serverId,
 		Protocol: protocol,
 		User:     user,
 		Password: password,
@@ -91,6 +91,14 @@ func (m *Manager) Open() error {
 	}
 
 	return nil
+}
+
+func (m *Manager) GetWriter() io.Writer {
+	if m.wr == nil {
+		// Create broker writer
+		m.wr = NewAmqpWriter(m.Ch)
+	}
+	return m.wr
 }
 
 func (m *Manager) Close() error {
