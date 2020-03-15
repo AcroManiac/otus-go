@@ -2,6 +2,7 @@ package logic
 
 import (
 	"encoding/json"
+	"github.com/gofrs/uuid"
 	"io"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/entities"
@@ -28,6 +29,7 @@ func (s *Scheduler) Schedule() error {
 
 		// Create notice
 		notice := &entities.Notice{
+			Id:    uuid.UUID(ev.Id).String(),
 			Title: ev.Title,
 			Date:  ev.StartTime,
 			Owner: ev.Owner,
