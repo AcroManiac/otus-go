@@ -16,6 +16,13 @@ create table events (
     notify interval
 );
 
-create index start_time_idx on events using btree (start_time);
+create index start_time_owner_idx on events using btree (start_time, owner);
+
+create table notices (
+    id UUID primary key,
+    send_time timestampz not null
+);
+
+create index notices_id_idx on notices using btree (id);
 
 grant all privileges on all tables in schema public to dbuser;
