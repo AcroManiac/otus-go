@@ -3,30 +3,46 @@ package broker
 import (
 	"io"
 
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
+
 	"github.com/pkg/errors"
 
 	"github.com/streadway/amqp"
 )
 
 type AmqpWriter struct {
-	ch *amqp.Channel
+	cwq        *ChannelWithQueue
+	routingKey string
 }
 
-func NewAmqpWriter(ch *amqp.Channel) io.Writer {
-	return &AmqpWriter{ch: ch}
+func NewAmqpWriter(conn *amqp.Connection) io.WriteCloser {
+
+	// Create amqp channel and queue
+	ch, err := NewChannelWithQueue(conn, nil)
+	if err != nil {
+		logger.Error("failed creating amqp channel and queue",
+			"error", err,
+			"caller", "NewAmqpWriter")
+		return nil
+	}
+
+	return &AmqpWriter{
+		cwq:        ch,
+		routingKey: routingKey,
+	}
 }
 
 // Write message to RabbitMQ broker.
 // Returns message length on success or error if any
 func (w *AmqpWriter) Write(p []byte) (n int, err error) {
-	if w.ch == nil {
+	if w.cwq.Ch == nil {
 		return 0, errors.New("no output channel defined")
 	}
 
 	// Send message to gateway
-	err = w.ch.Publish(
+	err = w.cwq.Ch.Publish(
 		exchangeName, // exchange
-		routingKey,   // routing key
+		w.routingKey, // routing key
 		false,        // mandatory
 		false,        // immediate
 		amqp.Publishing{
@@ -38,4 +54,11 @@ func (w *AmqpWriter) Write(p []byte) (n int, err error) {
 	}
 
 	return len(p), nil
+}
+
+func (w *AmqpWriter) Close() error {
+	if err := w.cwq.Close(); err != nil {
+		return errors.Wrap(err, "failed closing writer channel")
+	}
+	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
+
 	"github.com/pkg/errors"
 
 	"github.com/streadway/amqp"
@@ -12,29 +13,43 @@ import (
 
 type AmqpReader struct {
 	ctx  context.Context
+	cwq  *ChannelWithQueue
 	msgs <-chan amqp.Delivery
 }
 
-func NewAmqpReader(ctx context.Context, ch *amqp.Channel, que *amqp.Queue) io.Reader {
+func NewAmqpReader(ctx context.Context, conn *amqp.Connection) io.ReadCloser {
 
-	// Create consuming channel
-	msgs, err := ch.Consume(
-		que.Name, // queue
-		"",       // consumer
-		true,     // auto ack
-		false,    // exclusive
-		false,    // no local
-		false,    // no wait
-		nil,      // args
-	)
+	// Create amqp channel and queue
+	queueName := queueName
+	ch, err := NewChannelWithQueue(conn, &queueName)
 	if err != nil {
-		logger.Error("failed to register a consumer", "error", err)
+		logger.Error("failed creating amqp channel and queue",
+			"error", err, "queue", queueName,
+			"caller", "NewAmqpReader")
 		return nil
 	}
 
-	// Create reader object
+	// Create consuming channel
+	msgs, err := ch.Ch.Consume(
+		ch.Que.Name, // queue
+		"",          // consumer
+		true,        // auto ack
+		true,        // exclusive
+		false,       // no local
+		false,       // no wait
+		nil,         // args
+	)
+	if err != nil {
+		logger.Error("failed to register a consumer",
+			"error", err, "queue", queueName,
+			"caller", "NewAmqpReader")
+		return nil
+	}
+
+	// Return reader object
 	return &AmqpReader{
 		ctx:  ctx,
+		cwq:  ch,
 		msgs: msgs,
 	}
 }
@@ -43,11 +58,18 @@ func NewAmqpReader(ctx context.Context, ch *amqp.Channel, que *amqp.Queue) io.Re
 func (r *AmqpReader) Read(p []byte) (n int, err error) {
 	select {
 	case <-r.ctx.Done():
-		err = errors.New("context cancelled")
+		logger.Debug("Context cancelled", "caller", "AmqpReader")
 	case message, ok := <-r.msgs:
 		if ok {
 			n = copy(p, message.Body)
 		}
 	}
 	return
+}
+
+func (r *AmqpReader) Close() error {
+	if err := r.cwq.Close(); err != nil {
+		return errors.Wrap(err, "failed closing gateway output channel")
+	}
+	return nil
 }

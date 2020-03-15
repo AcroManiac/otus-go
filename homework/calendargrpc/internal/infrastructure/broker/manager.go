@@ -1,6 +1,7 @@
 package broker
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -21,9 +22,8 @@ type Manager struct {
 	Host     string
 	Port     int
 	Conn     *amqp.Connection
-	Ch       *amqp.Channel
-	Que      amqp.Queue
-	wr       io.Writer
+	wr       io.WriteCloser
+	rd       io.ReadCloser
 }
 
 func NewManager(protocol, user, password, host string, port int) *Manager {
@@ -46,73 +46,38 @@ func (m *Manager) Open() error {
 		return errors.Wrap(err, "failed to connect to RabbitMQ")
 	}
 
-	// Open channel
-	m.Ch, err = m.Conn.Channel()
-	if err != nil {
-		return errors.Wrap(err, "failed to open a channel")
-	}
-
-	// Open exchange
-	err = m.Ch.ExchangeDeclare(
-		exchangeName, // name
-		"topic",      // type
-		true,         // durable
-		false,        // auto-deleted
-		false,        // internal
-		false,        // no-wait
-		nil,          // arguments
-	)
-	if err != nil {
-		return errors.Wrap(err, "failed to declare an exchange")
-	}
-
-	// Create queue
-	m.Que, err = m.Ch.QueueDeclare(
-		queueName, // name
-		false,     // durable
-		false,     // delete when unused
-		true,      // exclusive
-		false,     // no-wait
-		nil,       // arguments
-	)
-	if err != nil {
-		return errors.Wrap(err, "failed to declare a queue")
-	}
-
-	// Binding queue to exchange
-	err = m.Ch.QueueBind(
-		m.Que.Name,   // queue name
-		routingKey,   // routing key
-		exchangeName, // exchange
-		false,
-		nil)
-	if err != nil {
-		return errors.Wrap(err, "failed to bind a queue")
-	}
-
 	return nil
 }
 
 func (m *Manager) GetWriter() io.Writer {
 	if m.wr == nil {
 		// Create broker writer
-		m.wr = NewAmqpWriter(m.Ch)
+		m.wr = NewAmqpWriter(m.Conn)
 	}
 	return m.wr
 }
 
-func (m *Manager) Close() error {
-	// Close queue
-	if _, err := m.Ch.QueueDelete(m.Que.Name, false, false, true); err != nil {
-		return errors.Wrap(err, "error deleting queue")
+func (m *Manager) GetReader(ctx context.Context) io.Reader {
+	if m.rd == nil {
+		// Create broker reader
+		m.rd = NewAmqpReader(ctx, m.Conn)
 	}
+	return m.rd
+}
 
-	// Close channel
-	if m.Ch != nil {
-		if err := m.Ch.Close(); err != nil {
-			return errors.Wrap(err, "failed to close channel")
+func (m *Manager) Close() error {
+	// Close i/o channels
+	if m.rd != nil {
+		if err := m.rd.Close(); err != nil {
+			return errors.Wrap(err, "failed closing reader")
 		}
 	}
+	if m.wr != nil {
+		if err := m.wr.Close(); err != nil {
+			return errors.Wrap(err, "failed closing writer")
+		}
+	}
+
 	// Close connection
 	if m.Conn != nil {
 		if err := m.Conn.Close(); err != nil {
