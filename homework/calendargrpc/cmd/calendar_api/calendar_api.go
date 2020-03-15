@@ -10,7 +10,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/api"
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/grpcapi"
+
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/pkg/api"
+
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/database"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -67,7 +70,7 @@ func main() {
 		logger.Fatal("failed to listen tcp", "error", err)
 	}
 	grpcServer := grpc.NewServer()
-	api.RegisterCalendarApiServer(grpcServer, api.NewCalendarApiServer(cal))
+	api.RegisterCalendarApiServer(grpcServer, grpcapi.NewCalendarApiServer(cal))
 
 	// Register reflection service on gRPC server.
 	reflection.Register(grpcServer)

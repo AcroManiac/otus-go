@@ -7,9 +7,10 @@ import (
 	"log"
 	"time"
 
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/pkg/api"
+
 	"github.com/golang/protobuf/ptypes"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/api"
 	"google.golang.org/grpc"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"

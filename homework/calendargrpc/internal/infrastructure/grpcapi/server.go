@@ -1,8 +1,9 @@
-package api
+package grpcapi
 
 import (
 	"context"
 	"errors"
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/pkg/api"
 	"time"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/entities"
@@ -17,12 +18,12 @@ type CalendarApiServerImpl struct {
 	cal interfaces.Calendar
 }
 
-func NewCalendarApiServer(cal interfaces.Calendar) CalendarApiServer {
+func NewCalendarApiServer(cal interfaces.Calendar) api.CalendarApiServer {
 	return &CalendarApiServerImpl{cal: cal}
 }
 
 func (c *CalendarApiServerImpl) CreateEvent(
-	ctx context.Context, request *CreateEventRequest) (*CreateEventResponse, error) {
+	ctx context.Context, request *api.CreateEventRequest) (*api.CreateEventResponse, error) {
 	logger.Debug("Received CreateEvent request", "content", request.String())
 
 	// Convert time from gRPC representation
@@ -55,8 +56,8 @@ func (c *CalendarApiServerImpl) CreateEvent(
 		duration)
 	if err != nil {
 		// Send error response
-		response := &CreateEventResponse{
-			Result: &CreateEventResponse_Error{
+		response := &api.CreateEventResponse{
+			Result: &api.CreateEventResponse_Error{
 				Error: err.Error(),
 			},
 		}
@@ -65,7 +66,7 @@ func (c *CalendarApiServerImpl) CreateEvent(
 	}
 
 	// Create output protobuf message
-	message := &Event{
+	message := &api.Event{
 		Id:          uuid.UUID(id).String(),
 		Title:       request.GetTitle(),
 		Description: request.GetDescription(),
@@ -76,8 +77,8 @@ func (c *CalendarApiServerImpl) CreateEvent(
 	}
 
 	// Send data response
-	response := &CreateEventResponse{
-		Result: &CreateEventResponse_Event{
+	response := &api.CreateEventResponse{
+		Result: &api.CreateEventResponse_Event{
 			Event: message,
 		},
 	}
@@ -86,7 +87,7 @@ func (c *CalendarApiServerImpl) CreateEvent(
 }
 
 func (c *CalendarApiServerImpl) EditEvent(
-	ctx context.Context, request *EditEventRequest) (*EditEventResponse, error) {
+	ctx context.Context, request *api.EditEventRequest) (*api.EditEventResponse, error) {
 	logger.Debug("Received EditEvent request", "content", request.String())
 
 	input := request.GetEvent()
@@ -146,7 +147,7 @@ func (c *CalendarApiServerImpl) EditEvent(
 	}
 
 	// Send output response
-	response := &EditEventResponse{
+	response := &api.EditEventResponse{
 		Error: func() string {
 			if err != nil {
 				return err.Error()
@@ -159,7 +160,7 @@ func (c *CalendarApiServerImpl) EditEvent(
 }
 
 func (c *CalendarApiServerImpl) DeleteEvent(
-	ctx context.Context, request *DeleteEventRequest) (*DeleteEventResponse, error) {
+	ctx context.Context, request *api.DeleteEventRequest) (*api.DeleteEventResponse, error) {
 	logger.Debug("Received DeleteEvent request", "content", request.String())
 
 	// Get Id from request
@@ -177,7 +178,7 @@ func (c *CalendarApiServerImpl) DeleteEvent(
 	}
 
 	// Send output response
-	response := &DeleteEventResponse{
+	response := &api.DeleteEventResponse{
 		Error: func() string {
 			if err != nil {
 				return err.Error()
@@ -190,7 +191,7 @@ func (c *CalendarApiServerImpl) DeleteEvent(
 }
 
 func (c *CalendarApiServerImpl) GetEvents(
-	ctx context.Context, request *GetEventsRequest) (*GetEventsResponse, error) {
+	ctx context.Context, request *api.GetEventsRequest) (*api.GetEventsResponse, error) {
 	logger.Debug("Received GetEvents request", "content", request.String())
 
 	// Convert time from gRPC representation
@@ -207,13 +208,13 @@ func (c *CalendarApiServerImpl) GetEvents(
 	// Get and convert time period
 	var period entities.TimePeriod
 	switch request.GetPeriod() {
-	case TimePeriod_TIME_DAY:
+	case api.TimePeriod_TIME_DAY:
 		period = entities.Day
-	case TimePeriod_TIME_WEEK:
+	case api.TimePeriod_TIME_WEEK:
 		period = entities.Week
-	case TimePeriod_TIME_MONTH:
+	case api.TimePeriod_TIME_MONTH:
 		period = entities.Month
-	case TimePeriod_TIME_UNKNOWN:
+	case api.TimePeriod_TIME_UNKNOWN:
 		err := errors.New("wrong input time period")
 		logger.Error(err.Error())
 		return nil, err
@@ -226,7 +227,7 @@ func (c *CalendarApiServerImpl) GetEvents(
 	}
 
 	// Fill output data
-	var grpcEvents []*Event
+	var grpcEvents []*api.Event
 	for _, ev := range events {
 		// Convert time to gRPC representation
 		startTime, err := ptypes.TimestampProto(ev.StartTime)
@@ -241,7 +242,7 @@ func (c *CalendarApiServerImpl) GetEvents(
 			notify = ptypes.DurationProto(*ev.Notify)
 		}
 
-		grpcEvents = append(grpcEvents, &Event{
+		grpcEvents = append(grpcEvents, &api.Event{
 			Id:    uuid.UUID(ev.Id).String(),
 			Title: ev.Title,
 			Description: func(s *string) string {
@@ -258,7 +259,7 @@ func (c *CalendarApiServerImpl) GetEvents(
 	}
 
 	// Send output response
-	response := &GetEventsResponse{
+	response := &api.GetEventsResponse{
 		Events: grpcEvents,
 		Error: func() string {
 			if err != nil {
