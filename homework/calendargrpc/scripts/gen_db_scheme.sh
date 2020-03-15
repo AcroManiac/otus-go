@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sudo -u postgres psql < db_scheme.sql
+sudo -u postgres psql < ../migrations/db_scheme.sql
