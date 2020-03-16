@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/database"
 
@@ -59,18 +60,29 @@ func main() {
 		logger.Fatal("error initializing RabbitMQ broker", "error", err)
 	}
 
-	// Create scheduler logic
-	scheduler := logic.NewScheduler(collector, manager.GetWriter())
-	_ = scheduler.Schedule()
-
 	// Set interrupt handler
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	// Wait for user or OS interrupt
-	<-done
+	// Create scheduler
+	scheduler := logic.NewScheduler(collector, manager.GetWriter())
 
-	// Make broker  graceful shutdown
+	// Start scheduler logic
+	ticker := time.NewTicker(10 * time.Second) //1 * time.Minute)
+OUTER:
+	for {
+		select {
+		case <-done:
+			logger.Debug("Exit from ticker")
+			break OUTER
+		case <-ticker.C:
+			if err := scheduler.Schedule(); err != nil {
+				logger.Error("scheduler error", "error", err)
+			}
+		}
+	}
+
+	// Make broker graceful shutdown
 	if err := manager.Close(); err != nil {
 		logger.Error("failed closing RabbitMQ broker connection", "error", err)
 	}

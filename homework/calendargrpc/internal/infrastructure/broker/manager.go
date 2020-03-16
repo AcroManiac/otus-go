@@ -3,6 +3,7 @@ package broker
 import (
 	"context"
 	"fmt"
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
 	"io"
 
 	"github.com/pkg/errors"
@@ -45,6 +46,8 @@ func (m *Manager) Open() error {
 	if err != nil {
 		return errors.Wrap(err, "failed to connect to RabbitMQ")
 	}
+
+	logger.Info("RabbitMQ broker connected", "host", m.Host)
 
 	return nil
 }

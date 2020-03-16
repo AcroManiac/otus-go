@@ -23,8 +23,10 @@ func NewDatabaseEventsCollector(ctx context.Context, user, password, host, datab
 func (ec EventsCollector) GetEvents() ([]entities.Event, error) {
 	// Select records from database
 	events, err := GetEventsQueryContext(ec.ctx, ec.conn,
-		`select id, title, description, owner, start_time, duration, notify 
-			from events where start_time - notify <= now()`)
+		"SELECT id, title, description, owner, start_time, duration, notify "+
+			"FROM events "+
+			"WHERE start_time - notify <= now() "+
+			"AND id NOT IN (SELECT id FROM notices)")
 	if err != nil {
 		return nil, err
 	}
