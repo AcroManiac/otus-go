@@ -179,13 +179,15 @@ func (s Storage) GetEventsByTimePeriod(period entities.TimePeriod, t time.Time) 
 	defer rows.Close()
 
 	for rows.Next() {
-		var id uuid.UUID
-		var title string
-		var description sql.NullString
-		var owner string
-		var start_time time.Time
-		var duration time.Duration
-		var notify sql.NullString //time.Duration
+		var (
+			id          uuid.UUID
+			title       string
+			description sql.NullString
+			owner       string
+			start_time  time.Time
+			duration    time.Duration
+			notify      sql.NullString
+		)
 		err := rows.Scan(
 			&id, &title, &description, &owner,
 			&start_time, &duration, &notify)

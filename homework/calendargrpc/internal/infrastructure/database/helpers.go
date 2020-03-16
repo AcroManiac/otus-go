@@ -10,6 +10,19 @@ import (
 	"github.com/pkg/errors"
 )
 
+// eventsScanHelper keeps data for database scanning
+type eventsScanHelper struct {
+	Id          uuid.UUID      `db:"id"`
+	Title       string         `db:"title"`
+	Description sql.NullString `db:"description"`
+	Owner       string         `db:"owner"`
+	StartTime   time.Time      `db:"start_time"`
+	Duration    time.Duration  `db:"duration"`
+	Notify      sql.NullString `db:"notify"`
+}
+
+// GetEventsQueryContext queries database db with query text queryText and timed context ctx
+// Function returns slice of events or error if any
 func GetEventsQueryContext(ctx context.Context, db *Connection, queryText string) ([]entities.Event, error) {
 	var result []entities.Event
 
@@ -28,33 +41,27 @@ func GetEventsQueryContext(ctx context.Context, db *Connection, queryText string
 	defer rows.Close()
 
 	for rows.Next() {
-		var id uuid.UUID
-		var title string
-		var description sql.NullString
-		var owner string
-		var startTime time.Time
-		var duration time.Duration
-		var notify sql.NullString
+		var esh eventsScanHelper
 		err := rows.Scan(
-			&id, &title, &description, &owner,
-			&startTime, &duration, &notify)
+			&esh.Id, &esh.Title, &esh.Description, &esh.Owner,
+			&esh.StartTime, &esh.Duration, &esh.Notify)
 		if err != nil {
 			return nil, errors.Wrap(err, "error occurred while scanning record data")
 		}
 
 		// Add data to result slice
 		result = append(result, entities.Event{
-			Id:        entities.IdType(id),
-			Title:     title,
-			StartTime: startTime,
-			Duration:  duration,
+			Id:        entities.IdType(esh.Id),
+			Title:     esh.Title,
+			StartTime: esh.StartTime,
+			Duration:  esh.Duration,
 			Description: func(ns *sql.NullString) *string {
 				if ns.Valid {
 					return &ns.String
 				}
 				return nil
-			}(&description),
-			Owner: owner,
+			}(&esh.Description),
+			Owner: esh.Owner,
 			Notify: func(ns *sql.NullString) *time.Duration {
 				if ns.Valid {
 					dur, err := time.ParseDuration(ns.String)
@@ -64,7 +71,7 @@ func GetEventsQueryContext(ctx context.Context, db *Connection, queryText string
 					return &dur
 				}
 				return nil
-			}(&description),
+			}(&esh.Notify),
 		})
 	}
 
