@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/application"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/grpcapi"
 
@@ -20,27 +20,11 @@ import (
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/logic"
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
 func init() {
-	// using standard library "flag" package
-	flag.String("config", "../../configs/calendar_api.yaml", "path to configuration flag")
-
-	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	pflag.Parse()
-	_ = viper.BindPFlags(pflag.CommandLine)
-
-	// Reading configuration from file
-	configPath := viper.GetString("config") // retrieve value from viper
-	viper.SetConfigFile(configPath)
-	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("Couldn't read configuration file: %s", err.Error())
-	}
-
-	// Setting log parameters
-	logger.Init(viper.GetString("log.log_level"), viper.GetString("log.log_file"))
+	application.Init("../../configs/calendar_api.yaml")
 }
 
 func main() {
@@ -85,16 +69,17 @@ func main() {
 			logger.Fatal("error while starting gRPC server", "error", err)
 		}
 	}()
-	logger.Info("gRPC server started")
+	logger.Info("gRPC server started. Press Ctrl+C to exit...")
 
 	// Wait for user or OS interrupt
 	<-done
+
+	// Call context to stop i/o operations
+	cancel()
 
 	// Make gRPC server graceful shutdown
 	grpcServer.GracefulStop()
 	logger.Info("gRPC server stopped gracefully")
 
-	// Call context to stop i/o operations
-	cancel()
 	logger.Info("Application exited properly")
 }

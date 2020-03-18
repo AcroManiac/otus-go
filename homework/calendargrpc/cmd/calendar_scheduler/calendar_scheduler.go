@@ -2,39 +2,23 @@ package main
 
 import (
 	"context"
-	"flag"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/logic"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/broker"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/logic"
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/application"
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/broker"
+
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/database"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
 func init() {
-	// using standard library "flag" package
-	flag.String("config", "../../configs/calendar_scheduler.yaml", "path to configuration flag")
-
-	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	pflag.Parse()
-	_ = viper.BindPFlags(pflag.CommandLine)
-
-	// Reading configuration from file
-	configPath := viper.GetString("config") // retrieve value from viper
-	viper.SetConfigFile(configPath)
-	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("Couldn't read configuration file: %s", err.Error())
-	}
-
-	// Setting log parameters
-	logger.Init(viper.GetString("log.log_level"), viper.GetString("log.log_file"))
+	application.Init("../../configs/calendar_scheduler.yaml")
 }
 
 func main() {
@@ -64,35 +48,41 @@ func main() {
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	// Create scheduler
-	scheduler := logic.NewScheduler(collector, manager.GetWriter())
-
-	// Start scheduler logic
-	scheduleTicker := time.NewTicker(10 * time.Second) //1 * time.Minute)
-	cleanTicker := time.NewTicker(10 * time.Second)    //1 * time.Hour)
-OUTER:
-	for {
-		select {
-		case <-done:
-			logger.Debug("Exit from ticker")
-			break OUTER
-		case <-scheduleTicker.C:
-			if err := scheduler.Schedule(); err != nil {
-				logger.Error("scheduler error", "error", err)
-			}
-		case <-cleanTicker.C:
-			if err := scheduler.Clean(); err != nil {
-				logger.Error("cleaner error", "error", err)
+	// Start scheduler logic in a separate goroutine
+	go func() {
+		scheduler := logic.NewScheduler(collector, manager.GetWriter())
+		scheduleTicker := time.NewTicker(10 * time.Second) //1 * time.Minute)
+		cleanTicker := time.NewTicker(10 * time.Second)    //1 * time.Hour)
+	OUTER:
+		for {
+			select {
+			case <-ctx.Done():
+				logger.Debug("Exit from schedule logic")
+				break OUTER
+			case <-scheduleTicker.C:
+				if err := scheduler.Schedule(); err != nil {
+					logger.Error("scheduler error", "error", err)
+				}
+			case <-cleanTicker.C:
+				if err := scheduler.Clean(); err != nil {
+					logger.Error("cleaner error", "error", err)
+				}
 			}
 		}
-	}
+	}()
+
+	logger.Info("Application started. Press Ctrl+C to exit...")
+
+	// Wait for user or OS interrupt
+	<-done
+
+	// Call context to stop i/o operations
+	cancel()
 
 	// Make broker graceful shutdown
 	if err := manager.Close(); err != nil {
 		logger.Error("failed closing RabbitMQ broker connection", "error", err)
 	}
 
-	// Call context to stop i/o operations
-	cancel()
 	logger.Info("Application exited properly")
 }

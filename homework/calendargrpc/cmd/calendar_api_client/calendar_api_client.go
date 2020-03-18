@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
-	"log"
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/application"
 	"time"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/pkg/api"
@@ -14,33 +13,18 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
 func init() {
-	// using standard library "flag" package
-	flag.String("config", "../../configs/calendar_api_client.yaml", "path to configuration flag")
-
-	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	pflag.Parse()
-	_ = viper.BindPFlags(pflag.CommandLine)
-
-	// Reading configuration from file
-	configPath := viper.GetString("config") // retrieve value from viper
-	viper.SetConfigFile(configPath)
-	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("Couldn't read configuration file: %s", err.Error())
-	}
-
-	// Setting log parameters
-	logger.Init(viper.GetString("log.log_level"), viper.GetString("log.log_file"))
+	application.Init("../../configs/calendar_api_client.yaml")
 }
 
 func main() {
 
 	// Create cancel context
-	ctx, _ := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	// Start gRPC client
 	cc, err := grpc.Dial(
