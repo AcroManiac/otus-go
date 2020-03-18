@@ -12,14 +12,23 @@ import (
 
 type Scheduler struct {
 	collector interfaces.EventsCollector
+	cleaner   interfaces.Cleaner
 	wr        io.Writer
 }
 
-func NewScheduler(collector interfaces.EventsCollector, wr io.Writer) interfaces.Scheduler {
-	return &Scheduler{collector: collector, wr: wr}
+func NewScheduler(collector interfaces.EventsCollector, cleaner interfaces.Cleaner, wr io.Writer) interfaces.Scheduler {
+	return &Scheduler{
+		collector: collector,
+		cleaner:   cleaner,
+		wr:        wr,
+	}
 }
 
 func (s *Scheduler) Schedule() error {
+	if s.collector == nil {
+		return errors.New("no events collector")
+	}
+
 	events, err := s.collector.GetEvents()
 	if err != nil {
 		return errors.Wrap(err, "error collecting events")
@@ -52,5 +61,11 @@ func (s *Scheduler) Schedule() error {
 
 // Clean retained events
 func (s *Scheduler) Clean() error {
+	if s.cleaner == nil {
+		return errors.New("no events cleaner")
+	}
+	if err := s.cleaner.Clean(); err != nil {
+		return errors.Wrap(err, "error cleaning retained events")
+	}
 	return nil
 }

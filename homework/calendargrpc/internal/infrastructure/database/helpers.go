@@ -23,8 +23,12 @@ type eventsScanHelper struct {
 
 // GetEventsQueryContext queries database db with query text queryText and timed context ctx
 // Function returns slice of events or error if any
-func GetEventsQueryContext(ctx context.Context, db *Connection, queryText string) ([]entities.Event, error) {
+func GetEventsQueryContext(db *Connection, queryText string) ([]entities.Event, error) {
 	var result []entities.Event
+
+	// Create context for query execution
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	// Get connection from pool
 	conn, err := db.Get(ctx)
@@ -94,7 +98,7 @@ func ExecQuery(db *Connection, queryText string, arguments ...interface{}) error
 	defer conn.Release()
 
 	// Execute database query with params
-	_, err = conn.Exec(ctx, queryText, arguments)
+	_, err = conn.Exec(ctx, queryText, arguments...)
 	if err != nil {
 		return errors.Wrap(err, "failed executing database query")
 	}

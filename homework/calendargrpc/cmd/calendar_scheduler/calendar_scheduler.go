@@ -26,12 +26,15 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Create database connection
-	collector := database.NewDatabaseEventsCollector(ctx,
+	conn := database.NewDatabaseConnection(
 		viper.GetString("db.user"),
 		viper.GetString("db.password"),
 		viper.GetString("db.host"),
 		viper.GetString("db.database"),
 		viper.GetInt("db.port"))
+	if err := conn.Init(ctx); err != nil {
+		logger.Fatal("unable to connect to database", "error", err)
+	}
 
 	// Create broker manager
 	manager := broker.NewManager(
@@ -50,7 +53,12 @@ func main() {
 
 	// Start scheduler logic in a separate goroutine
 	go func() {
-		scheduler := logic.NewScheduler(collector, manager.GetWriter())
+		scheduler := logic.NewScheduler(
+			database.NewDatabaseEventsCollector(conn),
+			database.NewDatabaseCleaner(
+				conn,
+				logic.NewRetentionPolicy(365*24*time.Hour)),
+			manager.GetWriter())
 		scheduleTicker := time.NewTicker(10 * time.Second) //1 * time.Minute)
 		cleanTicker := time.NewTicker(10 * time.Second)    //1 * time.Hour)
 	OUTER:
