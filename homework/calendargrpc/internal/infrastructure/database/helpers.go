@@ -77,3 +77,27 @@ func GetEventsQueryContext(ctx context.Context, db *Connection, queryText string
 
 	return result, nil
 }
+
+// ExecQuery gets connection from connection pool, creates timed context and
+// executes database query with arguments
+func ExecQuery(db *Connection, queryText string, arguments ...interface{}) error {
+
+	// Create context for query execution
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Get connection from pool
+	conn, err := db.Get(ctx)
+	if err != nil {
+		return errors.Wrap(err, "error getting database connection from pool")
+	}
+	defer conn.Release()
+
+	// Execute database query with params
+	_, err = conn.Exec(ctx, queryText, arguments)
+	if err != nil {
+		return errors.Wrap(err, "failed executing database query")
+	}
+
+	return nil
+}

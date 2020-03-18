@@ -1,0 +1,18 @@
+---
+db:
+  user: "dbuser"
+  password: "En9NR2b869"
+  host: "127.0.0.1"
+  port: 5432
+  database: "calendar"
+
+amqp:
+  protocol: "amqp"
+  user: "guest"
+  password: "guest"
+  host: "127.0.0.1"
+  port: 5672
+
+log:
+  log_file: ./calendar_sender.log
+  log_level: debug
