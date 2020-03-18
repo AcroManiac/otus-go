@@ -49,3 +49,8 @@ func (s *Scheduler) Schedule() error {
 	}
 	return nil
 }
+
+// Clean retained events
+func (s *Scheduler) Clean() error {
+	return nil
+}

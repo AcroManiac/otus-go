@@ -68,16 +68,21 @@ func main() {
 	scheduler := logic.NewScheduler(collector, manager.GetWriter())
 
 	// Start scheduler logic
-	ticker := time.NewTicker(10 * time.Second) //1 * time.Minute)
+	scheduleTicker := time.NewTicker(10 * time.Second) //1 * time.Minute)
+	cleanTicker := time.NewTicker(10 * time.Second)    //1 * time.Hour)
 OUTER:
 	for {
 		select {
 		case <-done:
 			logger.Debug("Exit from ticker")
 			break OUTER
-		case <-ticker.C:
+		case <-scheduleTicker.C:
 			if err := scheduler.Schedule(); err != nil {
 				logger.Error("scheduler error", "error", err)
+			}
+		case <-cleanTicker.C:
+			if err := scheduler.Clean(); err != nil {
+				logger.Error("cleaner error", "error", err)
 			}
 		}
 	}

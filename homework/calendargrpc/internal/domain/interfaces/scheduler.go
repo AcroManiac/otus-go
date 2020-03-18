@@ -2,7 +2,9 @@ package interfaces
 
 // Scheduler interface
 type Scheduler interface {
-	// Function manages events to be processed by services.
-	// Returns error if failed
+	// Schedule events to be processed by services
 	Schedule() error
+
+	// Clean retained events
+	Clean() error
 }
