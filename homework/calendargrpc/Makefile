@@ -7,6 +7,7 @@ GOBIN := $(GOBASE)/bin
 
 clean:
 	@-rm -fR $(GOBIN)
+	@-rm -fR $(GOBASE)/logs
 	@echo "  >  Cleaning build cache"
     @GOPATH=$(GOPATH) GOBIN=$(GOBIN) go clean
 
