@@ -47,13 +47,24 @@ func (c *CalendarApiServerImpl) CreateEvent(
 		duration = d
 	}
 
+	var notify time.Duration
+	if request.GetDuration() != nil {
+		n, err := ptypes.Duration(request.GetNotify())
+		if err != nil {
+			logger.Error("failed to convert notify", "error", err)
+			return nil, err
+		}
+		notify = n
+	}
+
 	// Create new calendar event
 	id, err := c.cal.CreateEvent(
 		request.GetTitle(),
 		request.GetDescription(),
 		request.GetOwner(),
 		startTime,
-		duration)
+		duration,
+		notify)
 	if err != nil {
 		// Send error response
 		response := &api.CreateEventResponse{
@@ -73,7 +84,7 @@ func (c *CalendarApiServerImpl) CreateEvent(
 		Owner:       request.GetOwner(),
 		StartTime:   request.GetStartTime(),
 		Duration:    request.GetDuration(),
-		Notify:      nil,
+		Notify:      request.GetNotify(),
 	}
 
 	// Send data response

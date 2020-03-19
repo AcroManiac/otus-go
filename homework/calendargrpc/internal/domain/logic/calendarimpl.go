@@ -17,7 +17,8 @@ func NewCalendar(storage interfaces.Storage) interfaces.Calendar {
 }
 
 func (i *Impl) CreateEvent(
-	title, description, owner string, startTime time.Time, duration time.Duration) (entities.IdType, error) {
+	title, description, owner string,
+	startTime time.Time, duration time.Duration, notify time.Duration) (entities.IdType, error) {
 	// Create and add event
 	newEvent := entities.Event{
 		Title:       title,
@@ -25,7 +26,7 @@ func (i *Impl) CreateEvent(
 		Duration:    duration,
 		Description: &description,
 		Owner:       owner,
-		Notify:      nil,
+		Notify:      &notify,
 	}
 
 	id, err := i.storage.Add(newEvent)

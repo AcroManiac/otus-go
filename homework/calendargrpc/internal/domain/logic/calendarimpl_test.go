@@ -29,7 +29,7 @@ var events = []entities.Event{
 		Duration:    30 * time.Minute,
 		Description: func(s string) *string { return &s }("Memory storage test event 2"),
 		Owner:       "artem",
-		Notify:      nil,
+		Notify:      func(t time.Duration) *time.Duration { return &t }(5 * time.Minute),
 	},
 	{
 		Title:       "Test Event 3",
@@ -53,7 +53,7 @@ var events = []entities.Event{
 func createCalendar(t *testing.T) interfaces.Calendar {
 	cal := NewCalendar(NewMemoryStorage())
 	for _, e := range events {
-		if _, err := cal.CreateEvent(e.Title, *e.Description, e.Owner, e.StartTime, e.Duration); err != nil {
+		if _, err := cal.CreateEvent(e.Title, *e.Description, e.Owner, e.StartTime, e.Duration, *e.Notify); err != nil {
 			t.Errorf("Couldn't populate with event: %s", err.Error())
 		}
 	}
@@ -72,7 +72,7 @@ func TestImpl_EditEvent(t *testing.T) {
 	// Create new event and add it to storage
 	id, err := cal.CreateEvent(
 		events[0].Title, *events[0].Description, events[0].Owner,
-		events[0].StartTime.Add(time.Hour), 30*time.Minute)
+		events[0].StartTime.Add(time.Hour), 30*time.Minute, *events[0].Notify)
 	assert.Nil(t, err, "Error should be nil")
 
 	// Modify existing event
@@ -89,7 +89,7 @@ func TestImpl_DeleteEvent(t *testing.T) {
 	// Create new event and add it to storage
 	id, err := cal.CreateEvent(
 		events[0].Title, *events[0].Description, events[0].Owner,
-		events[0].StartTime.Add(time.Hour), 30*time.Minute)
+		events[0].StartTime.Add(time.Hour), 30*time.Minute, *events[0].Notify)
 	assert.Nil(t, err, "Error should be nil")
 
 	// Delete existing event
