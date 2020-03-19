@@ -37,6 +37,59 @@ func main() {
 
 	grpcClient := api.NewCalendarApiClient(cc)
 
+	// Create and send several events to gRPC server
+	for i := 0; i < 4; i++ {
+		startTime, err := ptypes.TimestampProto(time.Now().Add(time.Minute))
+		if err != nil {
+			logger.Fatal("error converting timestamp", "error", err)
+		}
+
+		// Send create event request to gRPC server
+		createResponse, err := grpcClient.CreateEvent(ctx, &api.CreateEventRequest{
+			Title:       fmt.Sprintf("Event #%d", i),
+			Description: "Data for testing microservices",
+			Owner:       "Artem",
+			StartTime:   startTime,
+			Duration:    ptypes.DurationProto(time.Minute),
+			Notify:      ptypes.DurationProto(time.Second),
+		})
+		if err != nil {
+			logger.Error("failed sending CreateEvent request", "error", err)
+			continue
+		}
+
+		// Get new event id from gRPC response
+		respEvent := createResponse.GetEvent()
+		if respEvent == nil {
+			logger.Error("response returned no event")
+			continue
+		}
+		logger.Debug("Event created in calendar")
+
+		// Wait a bit
+		time.Sleep(2 * time.Second)
+	}
+
+	logger.Info("Client exited")
+}
+
+func mainPrevious() {
+
+	// Create cancel context
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Start gRPC client
+	cc, err := grpc.Dial(
+		fmt.Sprintf("%s:%d", viper.GetString("grpc.ip"), viper.GetInt("grpc.port")),
+		grpc.WithInsecure())
+	if err != nil {
+		logger.Fatal("could not connect gRPC server", "error", err)
+	}
+	defer cc.Close()
+
+	grpcClient := api.NewCalendarApiClient(cc)
+
 	loc, err := time.LoadLocation("Europe/Moscow")
 	if err != nil {
 		logger.Error("error loading location", "error", err)
