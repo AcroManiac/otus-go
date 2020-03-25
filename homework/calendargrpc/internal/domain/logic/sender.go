@@ -60,19 +60,15 @@ func (s *Sender) Start(ctx context.Context) {
 			}
 			mx.Unlock()
 
-			// Start processing incoming notice in a separate goroutine
-			go func(notice entities.Notice) {
-
-				// Send notice to senders
-				for _, sender := range s.snds {
-					// Check writer for validness
-					if sender == nil {
-						logger.Error("notice sender is nil")
-						continue
-					}
-					sender.Send(notice)
+			// Send notice to senders
+			for _, sender := range s.snds {
+				// Check writer for validness
+				if sender == nil {
+					logger.Error("notice sender is nil")
+					continue
 				}
-			}(inputNotice)
+				sender.Send(inputNotice)
+			}
 		}
 	}
 }
