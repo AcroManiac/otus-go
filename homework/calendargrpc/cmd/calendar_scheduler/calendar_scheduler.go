@@ -59,8 +59,8 @@ func main() {
 				conn,
 				logic.NewRetentionPolicy(365*24*time.Hour)),
 			manager.GetWriter())
-		scheduleTicker := time.NewTicker(10 * time.Second) //1 * time.Minute)
-		cleanTicker := time.NewTicker(10 * time.Second)    //1 * time.Hour)
+		scheduleTicker := time.NewTicker(viper.GetDuration("app.scheduler_interval"))
+		cleanTicker := time.NewTicker(viper.GetDuration("app.cleaner_interval"))
 	OUTER:
 		for {
 			select {
