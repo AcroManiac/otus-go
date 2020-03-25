@@ -30,11 +30,10 @@ func (s *Sender) Start(ctx context.Context) {
 	var mx sync.Mutex
 	buffer := make([]byte, 1024)
 
-OUTER:
 	for {
 		select {
 		case <-ctx.Done():
-			break OUTER
+			return
 		default:
 			inputNotice := entities.Notice{}
 
