@@ -20,3 +20,4 @@ log:
 app:
   scheduler_interval: 10s
   cleaner_interval: 10s
+  retention_policy: 8760h

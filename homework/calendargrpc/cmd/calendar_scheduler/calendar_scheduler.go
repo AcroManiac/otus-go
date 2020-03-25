@@ -57,7 +57,7 @@ func main() {
 			database.NewDatabaseEventsCollector(conn),
 			database.NewDatabaseCleaner(
 				conn,
-				logic.NewRetentionPolicy(365*24*time.Hour)),
+				logic.NewRetentionPolicy(viper.GetDuration("app.retention_policy"))),
 			manager.GetWriter())
 		scheduleTicker := time.NewTicker(viper.GetDuration("app.scheduler_interval"))
 		cleanTicker := time.NewTicker(viper.GetDuration("app.cleaner_interval"))
