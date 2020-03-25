@@ -42,9 +42,10 @@ func main() {
 		viper.GetString("amqp.password"),
 		viper.GetString("amqp.host"),
 		viper.GetInt("amqp.port"))
-	if err := manager.Open(); err != nil {
-		logger.Fatal("error initializing RabbitMQ broker", "error", err)
+	if manager == nil {
+		logger.Fatal("failed connecting to RabbitMQ")
 	}
+	logger.Info("RabbitMQ broker connected", "host", viper.GetString("amqp.host"))
 
 	// Set interrupt handler
 	done := make(chan os.Signal, 1)

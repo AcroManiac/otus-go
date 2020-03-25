@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/interfaces"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/interfaces"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/logic"
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/application"
@@ -43,9 +44,10 @@ func main() {
 		viper.GetString("amqp.password"),
 		viper.GetString("amqp.host"),
 		viper.GetInt("amqp.port"))
-	if err := manager.Open(); err != nil {
-		logger.Fatal("error initializing RabbitMQ broker", "error", err)
+	if manager == nil {
+		logger.Fatal("failed connecting to RabbitMQ")
 	}
+	logger.Info("RabbitMQ broker connected", "host", viper.GetString("amqp.host"))
 
 	// Create sender logic
 	sender := logic.NewSender(

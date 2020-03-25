@@ -3,7 +3,6 @@ package broker
 import (
 	"context"
 	"fmt"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
 	"io"
 
 	"github.com/pkg/errors"
@@ -28,28 +27,22 @@ type Manager struct {
 }
 
 func NewManager(protocol, user, password, host string, port int) *Manager {
+	connUrl := fmt.Sprintf("%s://%s:%s@%s:%d/", protocol, user, password, host, port)
+
+	// Open connection to broker
+	conn, err := amqp.Dial(connUrl)
+	if err != nil {
+		return nil
+	}
+
 	return &Manager{
 		Protocol: protocol,
 		User:     user,
 		Password: password,
 		Host:     host,
 		Port:     port,
+		Conn:     conn,
 	}
-}
-
-func (m *Manager) Open() error {
-	var err error
-	connUrl := fmt.Sprintf("%s://%s:%s@%s:%d/", m.Protocol, m.User, m.Password, m.Host, m.Port)
-
-	// Open connection to broker
-	m.Conn, err = amqp.Dial(connUrl)
-	if err != nil {
-		return errors.Wrap(err, "failed to connect to RabbitMQ")
-	}
-
-	logger.Info("RabbitMQ broker connected", "host", m.Host)
-
-	return nil
 }
 
 func (m *Manager) GetWriter() io.Writer {
