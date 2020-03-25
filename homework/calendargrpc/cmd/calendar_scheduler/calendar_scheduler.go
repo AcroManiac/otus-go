@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/logic"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/application"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/broker"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/logic"
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/application"
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/broker"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/database"
 
