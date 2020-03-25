@@ -2,14 +2,12 @@ package main
 
 import (
 	"context"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
-
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/logic"
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/application"
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/broker"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/database"
 
@@ -51,33 +49,17 @@ func main() {
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	// Start scheduler logic in a separate goroutine
-	go func() {
-		scheduler := logic.NewScheduler(
-			database.NewDatabaseEventsCollector(conn),
-			database.NewDatabaseCleaner(
-				conn,
-				logic.NewRetentionPolicy(viper.GetDuration("app.retention_policy"))),
-			manager.GetWriter())
-		scheduleTicker := time.NewTicker(viper.GetDuration("app.scheduler_interval"))
-		cleanTicker := time.NewTicker(viper.GetDuration("app.cleaner_interval"))
-	OUTER:
-		for {
-			select {
-			case <-ctx.Done():
-				logger.Debug("Exit from schedule logic")
-				break OUTER
-			case <-scheduleTicker.C:
-				if err := scheduler.Schedule(); err != nil {
-					logger.Error("scheduler error", "error", err)
-				}
-			case <-cleanTicker.C:
-				if err := scheduler.Clean(); err != nil {
-					logger.Error("cleaner error", "error", err)
-				}
-			}
-		}
-	}()
+	// Create scheduler logic and start in a separate goroutine
+	scheduler := logic.NewScheduler(
+		ctx,
+		database.NewDatabaseEventsCollector(conn),
+		database.NewDatabaseCleaner(
+			conn,
+			logic.NewRetentionPolicy(viper.GetDuration("app.retention_policy"))),
+		manager.GetWriter(),
+		viper.GetDuration("app.scheduler_interval"),
+		viper.GetDuration("app.cleaner_interval"))
+	go scheduler.Start()
 
 	logger.Info("Application started. Press Ctrl+C to exit...")
 
