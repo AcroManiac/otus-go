@@ -21,3 +21,9 @@ build:
 test:
 	@echo "  >  Making unit tests"
 	@go test ./...
+
+docker-build:
+	@echo "  >  Building docker images..."
+	@docker build -t otus-go/calendar_api:1.0  $(GOBASE)/build/package/api
+	@docker build -t otus-go/calendar_scheduler:1.0  $(GOBASE)/build/package/scheduler
+	@docker build -t otus-go/calendar_sender:1.0  $(GOBASE)/build/package/sender
