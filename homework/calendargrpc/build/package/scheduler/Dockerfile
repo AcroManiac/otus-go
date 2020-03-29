@@ -11,5 +11,4 @@ FROM alpine:latest
 WORKDIR /calendargrpc
 ENV GOPATH /go
 COPY --from=builder $GOPATH/src/github.com/AcroManiac/otus-go/homework/calendargrpc/bin/calendar_scheduler .
-COPY --from=builder $GOPATH/src/github.com/AcroManiac/otus-go/homework/calendargrpc/configs/calendar_scheduler.yaml .
-CMD ["./calendar_scheduler --config=calendar_scheduler.yaml"]
+CMD ["./calendar_scheduler"]

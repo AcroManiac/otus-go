@@ -11,6 +11,5 @@ FROM alpine:latest
 WORKDIR /calendargrpc
 ENV GOPATH /go
 COPY --from=builder $GOPATH/src/github.com/AcroManiac/otus-go/homework/calendargrpc/bin/calendar_api .
-COPY --from=builder $GOPATH/src/github.com/AcroManiac/otus-go/homework/calendargrpc/configs/calendar_api.yaml .
 EXPOSE 8888
-CMD ["./calendar_api --config=calendar_api.yaml"]
+CMD ["./calendar_api"]
