@@ -1,0 +1,88 @@
+version: "3"
+
+networks:
+  rabbit:
+    driver: bridge
+  db:
+    driver: bridge
+
+services:
+  postgres:
+    image: postgres:12.2
+    ports:
+      - "5432:5432"
+    expose:
+      - 5432
+    environment:
+      POSTGRES_USER: dbuser
+      POSTGRES_PASSWORD: En9NR2b869
+      POSTGRES_DB: calendar
+    volumes:
+      - ../migrations/db_scheme.sql:/docker-entrypoint-initdb.d/db_scheme.sql:ro
+    networks:
+      - db
+
+  rabbitmq:
+    image: rabbitmq:3.8.3-management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    expose:
+      - 15672
+    volumes:
+      - ./rabbitmq.def.json:/etc/rabbitmq/definitions.json:ro
+      - ./rabbitmq.config:/etc/rabbitmq/rabbitmq.config:ro
+    networks:
+      - rabbit
+
+  # Calendar API service
+  api:
+    build: ../build/package/api
+    depends_on:
+      - postgres
+    restart: on-failure
+    ports:
+      - "8888:8888"
+    expose:
+      - 8888
+    env_file:
+      - infrastructure.env
+    # Application specific environment variables
+    environment:
+      - GRPC_IP: "0.0.0.0"
+      - GRPC_PORT: 8888
+    networks:
+      - db
+
+  # Calendar Scheduler service
+  scheduler:
+    build: ../build/package/scheduler
+    depends_on:
+      - postgres
+      - rabbitmq
+      - api
+    restart: on-failure
+    env_file:
+      - infrastructure.env
+    # Application specific environment variables
+    environment:
+      - APP_SCHEDULER: 10s
+      - APP_CLEANER: 10s
+      - APP_RETENTION: 8760h
+    networks:
+      - db
+      - rabbit
+
+  # Calendar Sender service
+  sender:
+    build: ../build/package/sender
+    depends_on:
+      - postgres
+      - rabbitmq
+      - scheduler
+    restart: on-failure
+    env_file:
+      - infrastructure.env
+    networks:
+      - db
+      - rabbit
