@@ -49,8 +49,8 @@ services:
       - infrastructure.env
     # Application specific environment variables
     environment:
-      - GRPC_IP: "0.0.0.0"
-      - GRPC_PORT: 8888
+      GRPC_IP: "0.0.0.0"
+      GRPC_PORT: 8888
     networks:
       - db
 
@@ -66,9 +66,9 @@ services:
       - infrastructure.env
     # Application specific environment variables
     environment:
-      - APP_SCHEDULER: 10s
-      - APP_CLEANER: 10s
-      - APP_RETENTION: 8760h
+      APP_SCHEDULER: 10s
+      APP_CLEANER: 10s
+      APP_RETENTION: 8760h
     networks:
       - db
       - rabbit
