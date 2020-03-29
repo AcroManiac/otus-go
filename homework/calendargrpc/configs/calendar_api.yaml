@@ -5,9 +5,9 @@ db:
   host: "127.0.0.1"
   port: 5432
   database: "calendar"
-grpc_listen:
+grpc:
   ip: "0.0.0.0"
   port: 50051
 log:
-  log_file: ./calendar_api.log
-  log_level: debug
+  file: ./calendar_api.log
+  level: debug

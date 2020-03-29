@@ -57,10 +57,10 @@ func main() {
 		database.NewDatabaseEventsCollector(conn),
 		database.NewDatabaseCleaner(
 			conn,
-			logic.NewRetentionPolicy(viper.GetDuration("app.retention_policy"))),
+			logic.NewRetentionPolicy(viper.GetDuration("app.retention"))),
 		manager.GetWriter(),
-		viper.GetDuration("app.scheduler_interval"),
-		viper.GetDuration("app.cleaner_interval"))
+		viper.GetDuration("app.scheduler"),
+		viper.GetDuration("app.cleaner"))
 	go scheduler.Start()
 
 	logger.Info("Application started. Press Ctrl+C to exit...")

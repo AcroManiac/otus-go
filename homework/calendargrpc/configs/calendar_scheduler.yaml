@@ -14,10 +14,10 @@ amqp:
   port: 5672
 
 log:
-  log_file: ./calendar_scheduler.log
-  log_level: debug
+  file: ./calendar_scheduler.log
+  level: debug
 
 app:
-  scheduler_interval: 10s
-  cleaner_interval: 10s
-  retention_policy: 8760h
+  scheduler: 10s
+  cleaner: 10s
+  retention: 8760h

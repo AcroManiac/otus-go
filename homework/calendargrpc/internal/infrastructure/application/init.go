@@ -3,6 +3,7 @@ package application
 import (
 	"flag"
 	"log"
+	"strings"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
 	"github.com/spf13/pflag"
@@ -21,10 +22,12 @@ func Init(defaultConfigPath string) {
 	// Reading configuration from file
 	configPath := viper.GetString("config") // retrieve value from viper
 	viper.SetConfigFile(configPath)
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalf("Couldn't read configuration file: %s", err.Error())
 	}
 
 	// Setting log parameters
-	logger.Init(viper.GetString("log.log_level"), viper.GetString("log.log_file"))
+	logger.Init(viper.GetString("log.level"), viper.GetString("log.file"))
 }

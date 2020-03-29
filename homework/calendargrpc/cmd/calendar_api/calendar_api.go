@@ -49,7 +49,7 @@ func main() {
 
 	// Initialize and start gRPC server
 	lis, err := net.Listen("tcp",
-		fmt.Sprintf("%s:%d", viper.GetString("grpc_listen.ip"), viper.GetInt("grpc_listen.port")))
+		fmt.Sprintf("%s:%d", viper.GetString("grpc.ip"), viper.GetInt("grpc.port")))
 	if err != nil {
 		logger.Fatal("failed to listen tcp", "error", err)
 	}

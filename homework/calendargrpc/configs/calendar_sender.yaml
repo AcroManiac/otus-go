@@ -14,5 +14,5 @@ amqp:
   port: 5672
 
 log:
-  log_file: ./calendar_sender.log
-  log_level: debug
+  file: ./calendar_sender.log
+  level: debug
