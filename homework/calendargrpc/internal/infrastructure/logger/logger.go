@@ -20,13 +20,13 @@ func Init(logLevel, filePath string) {
 	// once ensures the singleton is initialized only once
 	once.Do(func() {
 		config := zap.NewProductionConfig()
-		config.OutputPaths = []string{
-			filePath,
-			"stderr",
+		config.OutputPaths = []string{"stderr"}
+		if len(filePath) > 0 {
+			config.OutputPaths = append(config.OutputPaths, filePath)
 		}
-		config.ErrorOutputPaths = []string{
-			filePath,
-			"stderr",
+		config.ErrorOutputPaths = []string{"stderr"}
+		if len(filePath) > 0 {
+			config.ErrorOutputPaths = append(config.ErrorOutputPaths, filePath)
 		}
 		config.EncoderConfig = zapcore.EncoderConfig{
 			MessageKey: "message",
