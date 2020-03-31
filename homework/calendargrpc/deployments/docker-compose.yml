@@ -1,9 +1,9 @@
 version: "3"
 
 networks:
-  rabbit:
+  rabbitmq:
     driver: bridge
-  db:
+  postgres:
     driver: bridge
 
 services:
@@ -13,14 +13,14 @@ services:
       - "5432:5432"
     expose:
       - 5432
+    env_file:
+      - infrastructure.env
     environment:
-      POSTGRES_USER: dbuser
-      POSTGRES_PASSWORD: En9NR2b869
-      POSTGRES_DB: calendar
+      - TZ=Europe/Moscow
     volumes:
       - ../migrations/db_scheme.sql:/docker-entrypoint-initdb.d/db_scheme.sql:ro
     networks:
-      - db
+      - postgres
 
   rabbitmq:
     image: rabbitmq:3.8.3-management
@@ -33,7 +33,7 @@ services:
       - ./rabbitmq.def.json:/etc/rabbitmq/definitions.json:ro
       - ./rabbitmq.config:/etc/rabbitmq/rabbitmq.config:ro
     networks:
-      - rabbit
+      - rabbitmq
 
   # Calendar API service
   api:
@@ -52,7 +52,7 @@ services:
       GRPC_IP: "0.0.0.0"
       GRPC_PORT: 8888
     networks:
-      - db
+      - postgres
 
   # Calendar Scheduler service
   scheduler:
@@ -60,29 +60,26 @@ services:
     depends_on:
       - postgres
       - rabbitmq
-      - api
     restart: on-failure
     env_file:
       - infrastructure.env
     # Application specific environment variables
     environment:
       APP_SCHEDULER: 10s
-      APP_CLEANER: 10s
+      APP_CLEANER: 60s
       APP_RETENTION: 8760h
     networks:
-      - db
-      - rabbit
+      - postgres
+      - rabbitmq
 
   # Calendar Sender service
   sender:
     build: ../build/package/sender
     depends_on:
-      - postgres
-      - rabbitmq
       - scheduler
     restart: on-failure
     env_file:
       - infrastructure.env
     networks:
-      - db
-      - rabbit
+      - postgres
+      - rabbitmq

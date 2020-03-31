@@ -7,7 +7,8 @@ db:
   database: "calendar"
 grpc:
   ip: "0.0.0.0"
-  port: 50051
+  port: 8888
+#  port: 50051
 log:
   file: ./calendar_api.log
   level: debug
