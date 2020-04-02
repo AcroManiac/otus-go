@@ -20,11 +20,11 @@ const (
 
 // Structure to represent event entity at interface layer
 type Event struct {
-	Id          IdType
-	Title       string
-	StartTime   time.Time
-	Duration    time.Duration
-	Description *string
-	Owner       string
-	Notify      *time.Duration
+	Id          IdType         `json:"id,omitempty"`
+	Title       string         `json:"title,omitempty"`
+	StartTime   time.Time      `json:"startTime,omitempty"`
+	Duration    time.Duration  `json:"duration,omitempty"`
+	Description *string        `json:"description,omitempty"`
+	Owner       string         `json:"owner,omitempty"`
+	Notify      *time.Duration `json:"duration,omitempty"`
 }
