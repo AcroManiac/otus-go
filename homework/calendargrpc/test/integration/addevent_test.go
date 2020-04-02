@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"google.golang.org/grpc"
 	"time"
+
+	"google.golang.org/grpc"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/entities"
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/pkg/api"
