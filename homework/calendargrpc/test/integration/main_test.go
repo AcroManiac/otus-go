@@ -43,7 +43,10 @@ func FeatureContext(s *godog.Suite) {
 	s.Step(`^response should have event$`, add.responseShouldHaveEvent)
 
 	// Make GetEvents test
-	s.Step(`^I send GetEvents request with period "([^"]*)" and start time "([^"]*)"$`, iSendGetEventsRequestWithPeriodAndStartTime)
+	get := &getEventsTest{}
+	s.Step(`^I send GetEvents request with period "([^"]*)" and start time "([^"]*)"$`,
+		get.iSendGetEventsRequestWithPeriodAndStartTime)
+	s.Step(`^search response should have event$`, get.searchShouldReturnEvent)
 
 	// Close connection to Calendar API
 	s.AfterScenario(closeClient)
@@ -51,7 +54,6 @@ func FeatureContext(s *godog.Suite) {
 
 // Global variables for multiple tests execution
 var (
-	err        error
 	clientConn *grpc.ClientConn
 	grpcClient api.CalendarApiClient
 )
@@ -59,6 +61,7 @@ var (
 func connectionToCalendarAPIOn(arg1 string) error {
 
 	// Start gRPC client
+	var err error
 	clientConn, err = grpc.Dial(arg1, grpc.WithInsecure())
 	if err != nil {
 		return errors.Wrap(err, "could not connect gRPC server")

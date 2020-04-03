@@ -24,7 +24,7 @@ func (t *addEventTest) thereIsTheEvent(arg1 *messages.PickleStepArgument_PickleD
 	}
 
 	event := &entities.Event{}
-	if err = json.Unmarshal([]byte(arg1.Content), event); err != nil {
+	if err := json.Unmarshal([]byte(arg1.Content), event); err != nil {
 		return errors.Wrap(err, "couldn't parse JSON object")
 	}
 
@@ -51,6 +51,7 @@ func (t *addEventTest) iSendAddEventRequest() error {
 	defer cancel()
 
 	// Send create event request to gRPC server
+	var err error
 	t.createResponse, err = grpcClient.CreateEvent(ctx, t.eventData)
 	if err != nil {
 		return errors.Wrap(err, "failed sending CreateEvent request")
