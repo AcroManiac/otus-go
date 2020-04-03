@@ -1,6 +1,6 @@
 
 Feature: Add calendar event
-  As API client fo Calendar service
+  As API client of Calendar service
   In order to understand that the user created Calendar event
   I want to receive response with added event from Calendar API service
 

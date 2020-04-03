@@ -4,6 +4,11 @@ import (
 	"os"
 	"testing"
 
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/pkg/api"
+	"github.com/cucumber/messages-go/v10"
+	"github.com/pkg/errors"
+	"google.golang.org/grpc"
+
 	"github.com/cucumber/godog"
 )
 
@@ -21,4 +26,54 @@ func TestMain(m *testing.M) {
 		status = st
 	}
 	os.Exit(status)
+}
+
+func FeatureContext(s *godog.Suite) {
+
+	// Initialize connection to Calendar API
+	s.Step(`^Connection to Calendar API on "([^"]*)"$`, connectionToCalendarAPIOn)
+
+	// Make AddEvent test
+	add := &addEventTest{
+		eventData:      nil,
+		createResponse: nil,
+	}
+	s.Step(`^There is the event:$`, add.thereIsTheEvent)
+	s.Step(`^I send AddEvent request$`, add.iSendAddEventRequest)
+	s.Step(`^response should have event$`, add.responseShouldHaveEvent)
+
+	// Make GetEvents test
+	s.Step(`^I send GetEvents request with period "([^"]*)" and start time "([^"]*)"$`, iSendGetEventsRequestWithPeriodAndStartTime)
+
+	// Close connection to Calendar API
+	s.AfterScenario(closeClient)
+}
+
+// Global variables for multiple tests execution
+var (
+	err        error
+	clientConn *grpc.ClientConn
+	grpcClient api.CalendarApiClient
+)
+
+func connectionToCalendarAPIOn(arg1 string) error {
+
+	// Start gRPC client
+	clientConn, err = grpc.Dial(arg1, grpc.WithInsecure())
+	if err != nil {
+		return errors.Wrap(err, "could not connect gRPC server")
+	}
+
+	grpcClient = api.NewCalendarApiClient(clientConn)
+	if grpcClient == nil {
+		return errors.New("failed creating calendar API client")
+	}
+
+	return nil
+}
+
+func closeClient(*messages.Pickle, error) {
+	if clientConn != nil {
+		_ = clientConn.Close()
+	}
 }
