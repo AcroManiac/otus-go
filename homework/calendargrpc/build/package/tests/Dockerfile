@@ -26,7 +26,7 @@ RUN rm -rf /var/cache/apk/*
 RUN go get -v github.com/AcroManiac/otus-go/...
 WORKDIR $GOPATH/src/github.com/AcroManiac/otus-go/homework/calendargrpc/test/integration
 
-# Run integration tests
-ENV CGO_ENABLED=0
-ENV GOOS=linux
-CMD ["dockerize", "-wait", "tcp://postgres:5432", "-wait", "tcp://rabbitmq:15672", "-timeout", "10s", "-wait-retry-interval", "10s", "go", "test"]
+## Run integration tests
+#ENV CGO_ENABLED=0
+#ENV GOOS=linux
+#CMD ["dockerize", "-wait", "tcp://postgres:5432", "-wait", "tcp://rabbitmq:15672", "-timeout", "10s", "-wait-retry-interval", "10s", "go", "test"]
