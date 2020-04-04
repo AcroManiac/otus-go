@@ -4,6 +4,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/cucumber/messages-go/v10"
+
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/database"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/pkg/api"
@@ -50,8 +52,8 @@ func FeatureContext(s *godog.Suite) {
 		get.iSendGetEventsRequestWithPeriodAndStartTime)
 	s.Step(`^search should return (\d+) event$`, get.searchShouldReturnEvent)
 
-	//// Close connection to Calendar API
-	//s.AfterScenario(closeClient)
+	// Close connection to Calendar API
+	s.AfterScenario(closeClient)
 
 	// Make SendNotification test
 	send := &sendNotificationTest{}
@@ -87,8 +89,8 @@ func connectionToCalendarAPIOn(arg1 string) error {
 	return nil
 }
 
-//func closeClient(interface{}, error) {
-//	if clientConn != nil {
-//		_ = clientConn.Close()
-//	}
-//}
+func closeClient(*messages.Pickle, error) {
+	if clientConn != nil {
+		_ = clientConn.Close()
+	}
+}
