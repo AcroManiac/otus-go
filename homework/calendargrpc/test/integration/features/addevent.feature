@@ -5,7 +5,7 @@ Feature: Add calendar event
   I want to receive response with added event from Calendar API service
 
   Scenario: Calendar event is added
-    Given Connection to Calendar API on "127.0.0.1:8888"
+    Given Connection to Calendar API on "api:8888"
     And There is the event:
     """
 		{
