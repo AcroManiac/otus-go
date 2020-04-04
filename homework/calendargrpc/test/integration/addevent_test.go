@@ -70,5 +70,7 @@ func (t *addEventTest) responseShouldHaveEvent() error {
 	if len(respEvent.GetId()) == 0 {
 		return errors.New("no valid event ID returned")
 	}
+
+	eventID = respEvent.GetId()
 	return nil
 }

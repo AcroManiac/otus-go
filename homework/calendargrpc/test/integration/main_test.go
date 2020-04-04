@@ -4,6 +4,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/database"
+
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/pkg/api"
 	"github.com/cucumber/messages-go/v10"
 	"github.com/pkg/errors"
@@ -17,9 +19,10 @@ func TestMain(m *testing.M) {
 	status := godog.RunWithOptions("integration", func(s *godog.Suite) {
 		FeatureContext(s)
 	}, godog.Options{
-		Format:    "progress",
-		Paths:     []string{"features"},
-		Randomize: 0,
+		Format:      "progress",
+		Paths:       []string{"features"},
+		Randomize:   0,
+		Concurrency: 0,
 	})
 
 	if st := m.Run(); st > status {
@@ -46,16 +49,26 @@ func FeatureContext(s *godog.Suite) {
 	get := &getEventsTest{}
 	s.Step(`^I send GetEvents request with period "([^"]*)" and start time "([^"]*)"$`,
 		get.iSendGetEventsRequestWithPeriodAndStartTime)
-	s.Step(`^search response should have event$`, get.searchShouldReturnEvent)
+	s.Step(`^search should return (\d+) event$`, get.searchShouldReturnEvent)
 
 	// Close connection to Calendar API
 	s.AfterScenario(closeClient)
+
+	// Make SendNotification test
+	send := &sendNotificationTest{}
+	s.Step(`^Connection to PostgreSQL service with DSN "([^"]*)"$`,
+		send.connectionToPostgreSQLServiceWithDSN)
+	s.Step(`^I wait for (\d+) minute$`, send.iWaitForMinute)
+	s.Step(`^selection from table "([^"]*)" should return (\d+) notice$`,
+		send.selectionFromTableShouldReturnNotice)
 }
 
 // Global variables for multiple tests execution
 var (
 	clientConn *grpc.ClientConn
 	grpcClient api.CalendarApiClient
+	db         *database.Connection
+	eventID    string
 )
 
 func connectionToCalendarAPIOn(arg1 string) error {

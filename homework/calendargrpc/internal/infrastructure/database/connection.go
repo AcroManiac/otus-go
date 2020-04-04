@@ -20,10 +20,13 @@ type Connection struct {
 }
 
 func NewDatabaseConnection(user, password, host, database string, port int) *Connection {
-	c := &Connection{
-		connUri: fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
-			user, password, host, port, database),
-	}
+	return NewDatabaseConnectionDSN(
+		fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
+			user, password, host, port, database))
+}
+
+func NewDatabaseConnectionDSN(dsn string) *Connection {
+	c := &Connection{connUri: dsn}
 	return c
 }
 
