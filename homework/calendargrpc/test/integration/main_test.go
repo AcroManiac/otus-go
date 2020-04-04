@@ -88,7 +88,7 @@ func connectionToCalendarAPIOn(arg1 string) error {
 	return nil
 }
 
-func closeClient(*messages.Pickle, error) {
+func closeClient(interface{}, error) {
 	if clientConn != nil {
 		_ = clientConn.Close()
 	}
