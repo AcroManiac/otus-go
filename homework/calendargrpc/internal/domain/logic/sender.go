@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"sync"
+	"time"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/entities"
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/interfaces"
@@ -36,6 +37,8 @@ func (s *Sender) Start(ctx context.Context) {
 			return
 		default:
 			inputNotice := entities.Notice{}
+
+			time.Sleep(100 * time.Millisecond)
 
 			// Read input message
 			mx.Lock()
