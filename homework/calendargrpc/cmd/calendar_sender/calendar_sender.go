@@ -22,56 +22,59 @@ func init() {
 	application.Init("../../configs/calendar_sender.yaml")
 }
 
-// Global variables
-var (
+// appServices holds objects to communicate with services
+type appServices struct {
 	ctx     context.Context
 	cancel  context.CancelFunc
 	conn    *database.Connection
 	manager *broker.Manager
 	sender  *logic.Sender
-)
+}
 
-func startSender() {
+// Create sender logic and start in a separate goroutine
+func startSender(app *appServices) {
 
 	// Create cancel context
-	ctx, cancel = context.WithCancel(context.Background())
+	app.ctx, app.cancel = context.WithCancel(context.Background())
 
 	// Start connection listener
-	go manager.ConnectionListener(ctx)
+	go app.manager.ConnectionListener(app.ctx)
 
 	// Create sender logic
-	sender = logic.NewSender(
-		manager.GetReader(ctx),
+	app.sender = logic.NewSender(
+		app.manager.GetReader(app.ctx),
 		[]interfaces.Sender{
 			logger.NewLogSender(),
-			database.NewDatabaseSender(conn),
+			database.NewDatabaseSender(app.conn),
 		})
 
 	// Start sender logic in a separate goroutine
-	go sender.Start(ctx)
+	go app.sender.Start(app.ctx)
 }
 
 func main() {
 
+	app := &appServices{}
+
 	// Create database connection
-	conn = database.NewDatabaseConnection(
+	app.conn = database.NewDatabaseConnection(
 		viper.GetString("db.user"),
 		viper.GetString("db.password"),
 		viper.GetString("db.host"),
 		viper.GetString("db.database"),
 		viper.GetInt("db.port"))
-	if err := conn.Init(context.Background()); err != nil {
+	if err := app.conn.Init(context.Background()); err != nil {
 		logger.Fatal("unable to connect to database", "error", err)
 	}
 
 	// Create broker manager
-	manager = broker.NewManager(
+	app.manager = broker.NewManager(
 		viper.GetString("amqp.protocol"),
 		viper.GetString("amqp.user"),
 		viper.GetString("amqp.password"),
 		viper.GetString("amqp.host"),
 		viper.GetInt("amqp.port"))
-	if manager == nil {
+	if app.manager == nil {
 		logger.Fatal("failed connecting to RabbitMQ")
 	}
 	logger.Info("RabbitMQ broker connected", "host", viper.GetString("amqp.host"))
@@ -81,7 +84,7 @@ func main() {
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	// Initialize and start scheduler
-	startSender()
+	startSender(app)
 
 	logger.Info("Application started. Press Ctrl+C to exit...")
 
@@ -93,26 +96,26 @@ OUTER:
 			break OUTER
 
 		// Catch broker connection notification
-		case connErr := <-manager.Done:
+		case connErr := <-app.manager.Done:
 			if connErr != nil {
 				// Call context to stop i/o operations and scheduler
-				cancel()
+				app.cancel()
 
 				// Recreate broker connection and scheduler
-				if err := manager.Reconnect(); err != nil {
+				if err := app.manager.Reconnect(); err != nil {
 					logger.Error("error reconnecting RabbitMQ", "error", err)
 					break OUTER
 				}
-				startSender()
+				startSender(app)
 			}
 		}
 	}
 
 	// Call context to stop i/o operations
-	cancel()
+	app.cancel()
 
 	// Make broker  graceful shutdown
-	if err := manager.Close(); err != nil {
+	if err := app.manager.Close(); err != nil {
 		logger.Error("failed closing RabbitMQ broker connection", "error", err)
 	}
 
