@@ -3,8 +3,12 @@ package grpcapi
 import (
 	"context"
 	"errors"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/pkg/api"
 	"time"
+
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/monitoring"
+
+	"github.com/AcroManiac/otus-go/homework/calendargrpc/pkg/api"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/entities"
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
@@ -15,16 +19,28 @@ import (
 )
 
 type CalendarApiServerImpl struct {
-	cal interfaces.Calendar
+	cal   interfaces.Calendar
+	stats map[string]*prometheus.SummaryVec
 }
 
 func NewCalendarApiServer(cal interfaces.Calendar) api.CalendarApiServer {
-	return &CalendarApiServerImpl{cal: cal}
+	return &CalendarApiServerImpl{
+		cal: cal,
+		stats: map[string]*prometheus.SummaryVec{
+			"create": monitoring.NewSummaryVec("calendar_api", "CreateEvent", "Create event statistics"),
+			"edit":   monitoring.NewSummaryVec("calendar_api", "EditEvent", "Edit event statistics"),
+			"delete": monitoring.NewSummaryVec("calendar_api", "DeleteEvent", "Delete event statistics"),
+			"get":    monitoring.NewSummaryVec("calendar_api", "GetEvents", "Get events statistics"),
+		},
+	}
 }
 
 func (c *CalendarApiServerImpl) CreateEvent(
 	ctx context.Context, request *api.CreateEventRequest) (*api.CreateEventResponse, error) {
 	logger.Debug("Received CreateEvent request", "content", request.String())
+
+	// Start function execution time counting
+	startFunc := time.Now()
 
 	// Convert time from gRPC representation
 	var startTime time.Time
@@ -93,6 +109,11 @@ func (c *CalendarApiServerImpl) CreateEvent(
 			Event: message,
 		},
 	}
+
+	// Store duration of function execution
+	dur := time.Since(startFunc)
+	c.stats["create"].WithLabelValues("duration").Observe(dur.Seconds())
+
 	logger.Debug("Sending CreateEvent response", "content", response.String())
 	return response, nil
 }
@@ -100,6 +121,9 @@ func (c *CalendarApiServerImpl) CreateEvent(
 func (c *CalendarApiServerImpl) EditEvent(
 	ctx context.Context, request *api.EditEventRequest) (*api.EditEventResponse, error) {
 	logger.Debug("Received EditEvent request", "content", request.String())
+
+	// Start function execution time counting
+	startFunc := time.Now()
 
 	input := request.GetEvent()
 
@@ -166,6 +190,11 @@ func (c *CalendarApiServerImpl) EditEvent(
 			return ""
 		}(),
 	}
+
+	// Store duration of function execution
+	dur := time.Since(startFunc)
+	c.stats["edit"].WithLabelValues("duration").Observe(dur.Seconds())
+
 	logger.Debug("Sending EditEvent response", "content", response.String())
 	return response, nil
 }
@@ -173,6 +202,9 @@ func (c *CalendarApiServerImpl) EditEvent(
 func (c *CalendarApiServerImpl) DeleteEvent(
 	ctx context.Context, request *api.DeleteEventRequest) (*api.DeleteEventResponse, error) {
 	logger.Debug("Received DeleteEvent request", "content", request.String())
+
+	// Start function execution time counting
+	startFunc := time.Now()
 
 	// Get Id from request
 	idTemp, err := uuid.FromString(request.GetId())
@@ -197,6 +229,11 @@ func (c *CalendarApiServerImpl) DeleteEvent(
 			return ""
 		}(),
 	}
+
+	// Store duration of function execution
+	dur := time.Since(startFunc)
+	c.stats["delete"].WithLabelValues("duration").Observe(dur.Seconds())
+
 	logger.Debug("Sending DeleteEvent response", "content", response.String())
 	return response, nil
 }
@@ -204,6 +241,9 @@ func (c *CalendarApiServerImpl) DeleteEvent(
 func (c *CalendarApiServerImpl) GetEvents(
 	ctx context.Context, request *api.GetEventsRequest) (*api.GetEventsResponse, error) {
 	logger.Debug("Received GetEvents request", "content", request.String())
+
+	// Start function execution time counting
+	startFunc := time.Now()
 
 	// Convert time from gRPC representation
 	var startTime time.Time
@@ -279,6 +319,11 @@ func (c *CalendarApiServerImpl) GetEvents(
 			return ""
 		}(),
 	}
+
+	// Store duration of function execution
+	dur := time.Since(startFunc)
+	c.stats["get"].WithLabelValues("duration").Observe(dur.Seconds())
+
 	logger.Debug("Sending GetEvents response", "content", response.String())
 	return response, nil
 }

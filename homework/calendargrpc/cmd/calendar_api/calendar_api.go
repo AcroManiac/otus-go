@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -21,6 +22,9 @@ import (
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/logic"
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
 	"github.com/spf13/viper"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func init() {
@@ -47,21 +51,37 @@ func main() {
 	cal := logic.NewCalendar(storage)
 	logger.Info("Calendar business logic created")
 
-	// Initialize and start gRPC server
+	// Create listener for gRPC server
 	lis, err := net.Listen("tcp",
 		fmt.Sprintf("%s:%d", viper.GetString("grpc.ip"), viper.GetInt("grpc.port")))
 	if err != nil {
 		logger.Fatal("failed to listen tcp", "error", err)
 	}
+
+	// Create a gRPC Server with gRPC interceptor
 	grpcServer := grpc.NewServer()
 	api.RegisterCalendarApiServer(grpcServer, grpcapi.NewCalendarApiServer(cal))
 
-	// Register reflection service on gRPC server.
+	// Register reflection service on gRPC server
 	reflection.Register(grpcServer)
+
+	// Expose the registered metrics via HTTP
+	httpServer := &http.Server{
+		Handler: promhttp.HandlerFor(prometheus.DefaultGatherer, promhttp.HandlerOpts{}),
+		Addr:    fmt.Sprintf("0.0.0.0:%d", viper.GetInt("monitor.port")),
+	}
 
 	// Set interrupt handler
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	// Start http server for Prometheus
+	go func() {
+		if err := httpServer.ListenAndServe(); err != nil {
+			logger.Fatal("Unable to start a http server", "error", err)
+		}
+	}()
+	logger.Info("Prometheus HTTP server started")
 
 	// Listen gRPC server
 	go func() {

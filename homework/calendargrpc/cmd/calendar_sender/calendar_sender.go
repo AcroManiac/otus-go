@@ -2,9 +2,14 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/interfaces"
 
@@ -79,9 +84,23 @@ func main() {
 	}
 	logger.Info("RabbitMQ broker connected", "host", viper.GetString("amqp.host"))
 
+	// Expose the registered metrics via HTTP
+	httpServer := &http.Server{
+		Handler: promhttp.HandlerFor(prometheus.DefaultGatherer, promhttp.HandlerOpts{}),
+		Addr:    fmt.Sprintf("0.0.0.0:%d", viper.GetInt("monitor.port")),
+	}
+
 	// Set interrupt handler
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	// Start http server for Prometheus
+	go func() {
+		if err := httpServer.ListenAndServe(); err != nil {
+			logger.Fatal("Unable to start a http server", "error", err)
+		}
+	}()
+	logger.Info("Prometheus HTTP server started")
 
 	// Initialize and start scheduler
 	startSender(app)
