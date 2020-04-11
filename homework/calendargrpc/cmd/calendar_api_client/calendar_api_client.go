@@ -97,7 +97,6 @@ func main() {
 				// Save event id
 				createdEvs.mx.Lock()
 				createdEvs.ids = append(createdEvs.ids, respEvent.GetId())
-				logger.Debug(fmt.Sprintf("Array length: %d", len(createdEvs.ids)))
 				createdEvs.mx.Unlock()
 			}
 		}
