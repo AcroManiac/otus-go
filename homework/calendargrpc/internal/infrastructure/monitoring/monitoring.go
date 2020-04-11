@@ -27,3 +27,15 @@ func NewCounterVec(ns, name, help string) *prometheus.CounterVec {
 	prometheus.MustRegister(counterVec)
 	return counterVec
 }
+
+func NewErrorVec(ns string) *prometheus.CounterVec {
+	errorVec := prometheus.NewCounterVec(prometheus.CounterOpts{
+		Namespace: ns,
+		Name:      "Errors",
+		Help:      "Error codes of gRPC requests",
+	},
+		[]string{"error_code"})
+
+	prometheus.MustRegister(errorVec)
+	return errorVec
+}
