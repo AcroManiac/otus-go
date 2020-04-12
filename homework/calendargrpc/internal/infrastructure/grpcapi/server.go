@@ -53,7 +53,7 @@ func (c *CalendarApiServerImpl) CreateEvent(
 		st, err := ptypes.Timestamp(request.GetStartTime())
 		if err != nil {
 			logger.Error("failed to convert timestamp", "error", err)
-			c.errs.WithLabelValues(codes.InvalidArgument.String())
+			c.errs.WithLabelValues(codes.InvalidArgument.String()).Inc()
 			return nil, status.Error(codes.InvalidArgument, "failed to convert timestamp")
 		}
 		startTime = st
@@ -64,7 +64,7 @@ func (c *CalendarApiServerImpl) CreateEvent(
 		d, err := ptypes.Duration(request.GetDuration())
 		if err != nil {
 			logger.Error("failed to convert timestamp", "error", err)
-			c.errs.WithLabelValues(codes.InvalidArgument.String())
+			c.errs.WithLabelValues(codes.InvalidArgument.String()).Inc()
 			return nil, status.Error(codes.InvalidArgument, "failed to convert timestamp")
 		}
 		duration = d
@@ -75,7 +75,7 @@ func (c *CalendarApiServerImpl) CreateEvent(
 		n, err := ptypes.Duration(request.GetNotify())
 		if err != nil {
 			logger.Error("failed to convert duration", "error", err)
-			c.errs.WithLabelValues(codes.InvalidArgument.String())
+			c.errs.WithLabelValues(codes.InvalidArgument.String()).Inc()
 			return nil, status.Error(codes.InvalidArgument, "failed to convert duration")
 		}
 		notify = n
@@ -97,7 +97,7 @@ func (c *CalendarApiServerImpl) CreateEvent(
 			},
 		}
 		logger.Error("error creating new calendar event", "error", err)
-		c.errs.WithLabelValues(codes.AlreadyExists.String())
+		c.errs.WithLabelValues(codes.AlreadyExists.String()).Inc()
 		return response, status.Error(codes.AlreadyExists, "error creating new calendar event")
 	}
 
@@ -124,7 +124,7 @@ func (c *CalendarApiServerImpl) CreateEvent(
 	c.stats["create"].WithLabelValues("duration").Observe(dur.Seconds())
 
 	logger.Debug("Sending CreateEvent response", "content", response.String())
-	c.errs.WithLabelValues(codes.OK.String())
+	c.errs.WithLabelValues(codes.OK.String()).Inc()
 	return response, nil
 }
 
@@ -143,7 +143,7 @@ func (c *CalendarApiServerImpl) EditEvent(
 		st, err := ptypes.Timestamp(input.GetStartTime())
 		if err != nil {
 			logger.Error("failed to convert timestamp", "error", err)
-			c.errs.WithLabelValues(codes.InvalidArgument.String())
+			c.errs.WithLabelValues(codes.InvalidArgument.String()).Inc()
 			return nil, status.Error(codes.InvalidArgument, "failed to convert timestamp")
 		}
 		startTime = st
@@ -154,7 +154,7 @@ func (c *CalendarApiServerImpl) EditEvent(
 		d, err := ptypes.Duration(input.GetDuration())
 		if err != nil {
 			logger.Error("failed to convert timestamp", "error", err)
-			c.errs.WithLabelValues(codes.InvalidArgument.String())
+			c.errs.WithLabelValues(codes.InvalidArgument.String()).Inc()
 			return nil, status.Error(codes.InvalidArgument, "failed to convert timestamp")
 		}
 		duration = d
@@ -165,7 +165,7 @@ func (c *CalendarApiServerImpl) EditEvent(
 		n, err := ptypes.Duration(input.GetNotify())
 		if err != nil {
 			logger.Error("failed to convert duration", "error", err)
-			c.errs.WithLabelValues(codes.InvalidArgument.String())
+			c.errs.WithLabelValues(codes.InvalidArgument.String()).Inc()
 			return nil, status.Error(codes.InvalidArgument, "failed to convert duration")
 		}
 		notify = n
@@ -174,7 +174,7 @@ func (c *CalendarApiServerImpl) EditEvent(
 	idTemp, err := uuid.FromString(input.GetId())
 	if err != nil {
 		logger.Error("failed to convert uuid", "error", err)
-		c.errs.WithLabelValues(codes.InvalidArgument.String())
+		c.errs.WithLabelValues(codes.InvalidArgument.String()).Inc()
 		return nil, status.Error(codes.InvalidArgument, "failed to convert uuid")
 	}
 	id := entities.IdType(idTemp)
@@ -210,7 +210,7 @@ func (c *CalendarApiServerImpl) EditEvent(
 	c.stats["edit"].WithLabelValues("duration").Observe(dur.Seconds())
 
 	logger.Debug("Sending EditEvent response", "content", response.String())
-	c.errs.WithLabelValues(codes.OK.String())
+	c.errs.WithLabelValues(codes.OK.String()).Inc()
 	return response, nil
 }
 
@@ -225,7 +225,7 @@ func (c *CalendarApiServerImpl) DeleteEvent(
 	idTemp, err := uuid.FromString(request.GetId())
 	if err != nil {
 		logger.Error("failed to convert uuid", "error", err)
-		c.errs.WithLabelValues(codes.InvalidArgument.String())
+		c.errs.WithLabelValues(codes.InvalidArgument.String()).Inc()
 		return nil, status.Error(codes.InvalidArgument, "failed to convert uuid")
 	}
 	id := entities.IdType(idTemp)
@@ -251,7 +251,7 @@ func (c *CalendarApiServerImpl) DeleteEvent(
 	c.stats["delete"].WithLabelValues("duration").Observe(dur.Seconds())
 
 	logger.Debug("Sending DeleteEvent response", "content", response.String())
-	c.errs.WithLabelValues(codes.OK.String())
+	c.errs.WithLabelValues(codes.OK.String()).Inc()
 	return response, nil
 }
 
@@ -268,7 +268,7 @@ func (c *CalendarApiServerImpl) GetEvents(
 		st, err := ptypes.Timestamp(request.GetStartTime())
 		if err != nil {
 			logger.Error("failed to convert timestamp", "error", err)
-			c.errs.WithLabelValues(codes.InvalidArgument.String())
+			c.errs.WithLabelValues(codes.InvalidArgument.String()).Inc()
 			return nil, status.Error(codes.InvalidArgument, "failed to convert timestamp")
 		}
 		startTime = st
@@ -286,7 +286,7 @@ func (c *CalendarApiServerImpl) GetEvents(
 	case api.TimePeriod_TIME_UNKNOWN:
 		err := errors.New("wrong input time period")
 		logger.Error(err.Error())
-		c.errs.WithLabelValues(codes.InvalidArgument.String())
+		c.errs.WithLabelValues(codes.InvalidArgument.String()).Inc()
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -303,7 +303,7 @@ func (c *CalendarApiServerImpl) GetEvents(
 		startTime, err := ptypes.TimestampProto(ev.StartTime)
 		if err != nil {
 			logger.Error("failed to convert timestamp", "error", err)
-			c.errs.WithLabelValues(codes.InvalidArgument.String())
+			c.errs.WithLabelValues(codes.InvalidArgument.String()).Inc()
 			return nil, status.Error(codes.InvalidArgument, "failed to convert timestamp")
 		}
 
@@ -345,6 +345,6 @@ func (c *CalendarApiServerImpl) GetEvents(
 	c.stats["get"].WithLabelValues("duration").Observe(dur.Seconds())
 
 	logger.Debug("Sending GetEvents response", "content", response.String())
-	c.errs.WithLabelValues(codes.OK.String())
+	c.errs.WithLabelValues(codes.OK.String()).Inc()
 	return response, nil
 }
