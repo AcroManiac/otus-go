@@ -35,6 +35,6 @@ test:
 .PHONY: docker-build
 docker-build:
 	@echo "  >  Building docker images..."
-	@docker build -t otus-go/calendar_api:1.0  $(GOBASE)/build/package/api
-	@docker build -t otus-go/calendar_scheduler:1.0  $(GOBASE)/build/package/scheduler
-	@docker build -t otus-go/calendar_sender:1.0  $(GOBASE)/build/package/sender
+	@docker build -t deployments_api:latest  $(GOBASE)/build/package/api
+	@docker build -t deployments_scheduler:latest  $(GOBASE)/build/package/scheduler
+	@docker build -t deployments_sender:latest  $(GOBASE)/build/package/sender
