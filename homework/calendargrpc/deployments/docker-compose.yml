@@ -1,9 +1,11 @@
 version: "3"
 
 networks:
+  postgres:
+    driver: bridge
   rabbitmq:
     driver: bridge
-  postgres:
+  monitor:
     driver: bridge
 
 services:
@@ -35,51 +37,59 @@ services:
     networks:
       - rabbitmq
 
-#  # Calendar API service
-#  api:
-#    build: ../build/package/api
-#    depends_on:
-#      - postgres
-#    restart: on-failure
-#    ports:
-#      - "8888:8888"
-#    expose:
-#      - 8888
-#    env_file:
-#      - infrastructure.env
-#    # Application specific environment variables
-#    environment:
-#      GRPC_IP: "0.0.0.0"
-#      GRPC_PORT: 8888
-#    networks:
-#      - postgres
-#
-#  # Calendar Scheduler service
-#  scheduler:
-#    build: ../build/package/scheduler
-#    depends_on:
-#      - postgres
-#      - rabbitmq
-#    restart: on-failure
-#    env_file:
-#      - infrastructure.env
-#    # Application specific environment variables
-#    environment:
-#      APP_SCHEDULER: 10s
-#      APP_CLEANER: 60s
-#      APP_RETENTION: 8760h
-#    networks:
-#      - postgres
-#      - rabbitmq
-#
-#  # Calendar Sender service
-#  sender:
-#    build: ../build/package/sender
-#    depends_on:
-#      - scheduler
-#    restart: on-failure
-#    env_file:
-#      - infrastructure.env
-#    networks:
-#      - postgres
-#      - rabbitmq
+  # Calendar API service
+  api:
+    build: ../build/package/api
+    depends_on:
+      - postgres
+    restart: on-failure
+    ports:
+      - "8888:8888"
+      - "9100:9100"
+    expose:
+      - 8888
+    env_file:
+      - infrastructure.env
+    # Application specific environment variables
+    environment:
+      GRPC_IP: "0.0.0.0"
+      GRPC_PORT: 8888
+      MONITOR_PORT: 9100
+    networks:
+      - postgres
+      - monitor
+
+  # Calendar Scheduler service
+  scheduler:
+    build: ../build/package/scheduler
+    depends_on:
+      - postgres
+      - rabbitmq
+    restart: on-failure
+    env_file:
+      - infrastructure.env
+    # Application specific environment variables
+    environment:
+      APP_SCHEDULER: 10s
+      APP_CLEANER: 60s
+      APP_RETENTION: 8760h
+    networks:
+      - postgres
+      - rabbitmq
+
+  # Calendar Sender service
+  sender:
+    build: ../build/package/sender
+    depends_on:
+      - scheduler
+    restart: on-failure
+    ports:
+      - "9102:9102"
+    env_file:
+      - infrastructure.env
+    environment:
+      MONITOR_PORT: 9102
+    networks:
+      - postgres
+      - rabbitmq
+      - monitor

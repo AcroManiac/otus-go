@@ -1,8 +1,8 @@
 version: "3"
 
-networks:
-  monitor-net:
-    driver: bridge
+#networks:
+#  monitor:
+#    driver: bridge
 
 #volumes:
 #  prometheus_data: {}
@@ -26,17 +26,30 @@ services:
     ports:
       - "9090:9090"
     networks:
-      - monitor-net
+      - monitor
+
+  pgexporter:
+    image: wrouesnel/postgres_exporter:latest
+    restart: on-failure
+    ports:
+    - "9187:9187"
+    expose:
+      - 9187
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:postgres@postgres:5432/postgres?sslmode=disable"
+    networks:
+      - monitor
+      - postgres
 
 #  grafana:
 #    image: grafana/grafana:latest-ubuntu
 #    container_name: grafana
 #    volumes:
-#      - grafana_data:/var/lib/grafana
-#      - ./grafana/datasources:/etc/grafana/datasources
-#      - ./grafana/dashboards:/etc/grafana/dashboards
-#      - ./grafana/setup.sh:/setup.sh
-#    entrypoint: /setup.sh
+##      - grafana_data:/var/lib/grafana
+##      - ./grafana/datasources:/etc/grafana/datasources
+##      - ./grafana/dashboards:/etc/grafana/dashboards
+##      - ./grafana/setup.sh:/setup.sh
+##    entrypoint: /setup.sh
 #    user: root
 #    environment:
 #      - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
@@ -48,4 +61,4 @@ services:
 #    ports:
 #      - 3000:3000
 #    networks:
-#      - monitor-net
+#      - monitor
