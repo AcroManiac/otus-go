@@ -1,5 +1,5 @@
 # Build docker image for Calendar services integration tests
-FROM golang:alpine
+FROM deployments_builder:latest
 MAINTAINER Artem Orlov <artem.orlov@gmail.com>
 
 RUN apk update && apk upgrade \
@@ -22,8 +22,7 @@ RUN apk add git
 # Clean APK cache
 RUN rm -rf /var/cache/apk/*
 
-# Get sources from repository
-RUN go get -v github.com/AcroManiac/otus-go/...
+# Set working dir
 WORKDIR $GOPATH/src/github.com/AcroManiac/otus-go/homework/calendargrpc/test/integration
 
 ## Run integration tests

@@ -35,6 +35,7 @@ test:
 .PHONY: docker-build
 docker-build:
 	@echo "  >  Building docker images..."
+	@docker build -t deployments_builder:latest  $(GOBASE)/build/package/builder
 	@docker build -t deployments_api:latest  $(GOBASE)/build/package/api
 	@docker build -t deployments_scheduler:latest  $(GOBASE)/build/package/scheduler
 	@docker build -t deployments_sender:latest  $(GOBASE)/build/package/sender

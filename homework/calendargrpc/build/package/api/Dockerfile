@@ -1,12 +1,3 @@
-# Build application from sources
-FROM golang:latest as builder
-MAINTAINER Artem Orlov <artem.orlov@gmail.com>
-
-# Get sources from repository
-RUN go get -v github.com/AcroManiac/otus-go/...
-WORKDIR $GOPATH/src/github.com/AcroManiac/otus-go/homework/calendargrpc/cmd/calendar_api
-RUN CGO_ENABLED=0 GOOS=linux go build -o ../../bin/calendar_api
-
 # Build docker image for application
 FROM alpine:latest
 RUN apk update && apk upgrade \
@@ -28,6 +19,6 @@ RUN rm -rf /var/cache/apk/*
 
 WORKDIR /calendargrpc
 ENV GOPATH /go
-COPY --from=builder $GOPATH/src/github.com/AcroManiac/otus-go/homework/calendargrpc/bin/calendar_api .
+COPY --from=deployments_builder:latest $GOPATH/src/github.com/AcroManiac/otus-go/homework/calendargrpc/bin/calendar_api .
 EXPOSE 8888
 CMD ["dockerize", "-wait", "tcp://postgres:5432", "-timeout", "10s", "-wait-retry-interval", "5s", "./calendar_api"]

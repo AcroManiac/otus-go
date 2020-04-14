@@ -37,10 +37,14 @@ services:
     networks:
       - rabbitmq
 
+  builder:
+    build: ../build/package/builder
+
   # Calendar API service
   api:
     build: ../build/package/api
     depends_on:
+      - builder
       - postgres
     restart: on-failure
     ports:
@@ -63,6 +67,7 @@ services:
   scheduler:
     build: ../build/package/scheduler
     depends_on:
+      - builder
       - postgres
       - rabbitmq
     restart: on-failure
@@ -81,6 +86,7 @@ services:
   sender:
     build: ../build/package/sender
     depends_on:
+      - builder
       - scheduler
     restart: on-failure
     ports:
