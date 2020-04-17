@@ -39,3 +39,13 @@ docker-build:
 	@docker build -t deployments_api:latest  $(GOBASE)/build/package/api
 	@docker build -t deployments_scheduler:latest  $(GOBASE)/build/package/scheduler
 	@docker build -t deployments_sender:latest  $(GOBASE)/build/package/sender
+
+.PHONY: monitor-up
+monitor-up:
+	@echo "  >  Starting service monitoring"
+	@docker-compose -f deployments/docker-compose.yml -f deployments/docker-compose.monitor.yml up -d
+
+.PHONY: monitor-down
+monitor-down:
+	@echo "  >  Stopping service monitoring"
+	@docker-compose -f deployments/docker-compose.yml -f deployments/docker-compose.monitor.yml down
