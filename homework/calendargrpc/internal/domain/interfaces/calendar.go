@@ -3,7 +3,7 @@ package interfaces
 import (
 	"time"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/entities"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/entities"
 )
 
 // Calendar interfaces

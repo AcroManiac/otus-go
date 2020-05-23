@@ -23,7 +23,7 @@ RUN apk add git
 RUN rm -rf /var/cache/apk/*
 
 # Set working dir
-WORKDIR $GOPATH/src/github.com/AcroManiac/otus-go/homework/calendargrpc/test/integration
+WORKDIR $GOPATH/src/github.com/ahamtat/otus-go/homework/calendargrpc/test/integration
 
 ## Run integration tests
 #ENV CGO_ENABLED=0

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/AcroManiac/otus-go/homework/calendar/internal/storage"
+	"github.com/ahamtat/otus-go/homework/calendar/internal/storage"
 	"log"
 	"net/http"
 	"os"
@@ -15,11 +15,11 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/AcroManiac/otus-go/homework/calendar/internal/logger"
+	"github.com/ahamtat/otus-go/homework/calendar/internal/logger"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
-	"github.com/AcroManiac/otus-go/homework/calendar/internal/calendar"
+	"github.com/ahamtat/otus-go/homework/calendar/internal/calendar"
 )
 
 func init() {

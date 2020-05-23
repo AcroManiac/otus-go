@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/entities"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/entities"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )

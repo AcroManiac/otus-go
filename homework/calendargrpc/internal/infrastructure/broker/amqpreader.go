@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/logger"
 
 	"github.com/pkg/errors"
 

@@ -1,4 +1,4 @@
-module github.com/AcroManiac/otus-go/homework/calendargrpc
+module github.com/ahamtat/otus-go/homework/calendargrpc
 
 go 1.13
 

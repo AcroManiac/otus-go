@@ -3,10 +3,10 @@ package calendar
 import (
 	"time"
 
-	"github.com/AcroManiac/otus-go/homework/calendar/internal/logger"
+	"github.com/ahamtat/otus-go/homework/calendar/internal/logger"
 
-	"github.com/AcroManiac/otus-go/homework/calendar/internal/event"
-	"github.com/AcroManiac/otus-go/homework/calendar/internal/storage"
+	"github.com/ahamtat/otus-go/homework/calendar/internal/event"
+	"github.com/ahamtat/otus-go/homework/calendar/internal/storage"
 )
 
 type Impl struct {

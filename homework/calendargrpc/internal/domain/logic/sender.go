@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/entities"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/interfaces"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/entities"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/interfaces"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/logger"
 )
 
 type Sender struct {

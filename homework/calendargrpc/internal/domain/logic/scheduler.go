@@ -3,13 +3,13 @@ package logic
 import (
 	"context"
 	"encoding/json"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/logger"
 	"github.com/gofrs/uuid"
 	"io"
 	"time"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/entities"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/interfaces"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/entities"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/interfaces"
 	"github.com/pkg/errors"
 )
 

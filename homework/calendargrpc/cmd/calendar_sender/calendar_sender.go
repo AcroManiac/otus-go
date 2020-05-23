@@ -11,15 +11,15 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/interfaces"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/interfaces"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/logic"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/application"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/broker"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/logic"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/application"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/broker"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/database"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/database"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/logger"
 	"github.com/spf13/viper"
 )
 

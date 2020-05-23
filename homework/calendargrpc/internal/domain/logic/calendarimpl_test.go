@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/entities"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/interfaces"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/entities"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/interfaces"
 	"github.com/stretchr/testify/assert"
 )
 

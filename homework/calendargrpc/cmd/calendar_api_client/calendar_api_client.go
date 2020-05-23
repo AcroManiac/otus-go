@@ -10,15 +10,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/application"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/application"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/pkg/api"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/pkg/api"
 
 	"github.com/golang/protobuf/ptypes"
 
 	"google.golang.org/grpc"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/logger"
 	"github.com/spf13/viper"
 )
 

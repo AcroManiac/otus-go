@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/interfaces"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/interfaces"
 	"github.com/pkg/errors"
 )
 

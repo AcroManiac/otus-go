@@ -2,11 +2,11 @@ package database
 
 import (
 	"context"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/entities"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/entities"
 	"testing"
 	"time"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/interfaces"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/interfaces"
 	"github.com/stretchr/testify/require"
 )
 

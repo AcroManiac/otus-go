@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/entities"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/pkg/api"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/entities"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/pkg/api"
 	"github.com/cucumber/messages-go/v10"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"

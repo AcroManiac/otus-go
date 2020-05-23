@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/AcroManiac/otus-go/homework/calendar/internal/event"
+	"github.com/ahamtat/otus-go/homework/calendar/internal/event"
 	"github.com/stretchr/testify/assert"
 )
 

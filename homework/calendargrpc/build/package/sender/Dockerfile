@@ -19,5 +19,5 @@ RUN rm -rf /var/cache/apk/*
 
 WORKDIR /calendargrpc
 ENV GOPATH /go
-COPY --from=deployments_builder:latest $GOPATH/src/github.com/AcroManiac/otus-go/homework/calendargrpc/bin/calendar_sender .
+COPY --from=deployments_builder:latest $GOPATH/src/github.com/ahamtat/otus-go/homework/calendargrpc/bin/calendar_sender .
 CMD ["dockerize", "-wait", "tcp://postgres:5432", "-wait", "tcp://rabbitmq:15672", "-timeout", "10s", "-wait-retry-interval", "5s", "./calendar_sender"]

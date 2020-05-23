@@ -1,4 +1,4 @@
-module github.com/AcroManiac/otus-go/homework/calendar
+module github.com/ahamtat/otus-go/homework/calendar
 
 go 1.13
 

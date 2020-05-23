@@ -1,6 +1,6 @@
 package interfaces
 
-import "github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/entities"
+import "github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/entities"
 
 // Sender interface
 type Sender interface {

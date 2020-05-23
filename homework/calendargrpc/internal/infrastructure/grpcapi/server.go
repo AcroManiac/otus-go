@@ -8,17 +8,17 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/monitoring"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/monitoring"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/pkg/api"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/pkg/api"
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/entities"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/entities"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/logger"
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/interfaces"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/interfaces"
 )
 
 type CalendarApiServerImpl struct {

@@ -9,18 +9,18 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/application"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/application"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/grpcapi"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/grpcapi"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/pkg/api"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/pkg/api"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/database"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/database"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/logic"
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/logic"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/logger"
 	"github.com/spf13/viper"
 
 	"github.com/prometheus/client_golang/prometheus"

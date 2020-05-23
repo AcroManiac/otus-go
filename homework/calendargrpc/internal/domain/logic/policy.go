@@ -3,7 +3,7 @@ package logic
 import (
 	"time"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/domain/interfaces"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/domain/interfaces"
 )
 
 type RetentionPolicy struct {

@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/database"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/database"
 	"github.com/pkg/errors"
 )
 

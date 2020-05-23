@@ -1,8 +1,8 @@
 package calendar
 
 import (
-	"github.com/AcroManiac/otus-go/homework/calendar/internal/event"
-	"github.com/AcroManiac/otus-go/homework/calendar/internal/storage"
+	"github.com/ahamtat/otus-go/homework/calendar/internal/event"
+	"github.com/ahamtat/otus-go/homework/calendar/internal/storage"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"

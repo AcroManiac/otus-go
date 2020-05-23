@@ -10,18 +10,18 @@ RUN apk update && apk upgrade \
     && rm -rf /var/cache/apk/*
 
 # Get sources from repository
-RUN go get -v github.com/AcroManiac/otus-go/...
-WORKDIR $GOPATH/src/github.com/AcroManiac/otus-go/homework/calendargrpc
+RUN go get -v github.com/ahamtat/otus-go/...
+WORKDIR $GOPATH/src/github.com/ahamtat/otus-go/homework/calendargrpc
 RUN go mod vendor
 
 # Build Calendar API application
-WORKDIR $GOPATH/src/github.com/AcroManiac/otus-go/homework/calendargrpc/cmd/calendar_api
+WORKDIR $GOPATH/src/github.com/ahamtat/otus-go/homework/calendargrpc/cmd/calendar_api
 RUN CGO_ENABLED=0 GOOS=linux go build -o ../../bin/calendar_api
 
 # Build Scheduler application
-WORKDIR $GOPATH/src/github.com/AcroManiac/otus-go/homework/calendargrpc/cmd/calendar_scheduler
+WORKDIR $GOPATH/src/github.com/ahamtat/otus-go/homework/calendargrpc/cmd/calendar_scheduler
 RUN CGO_ENABLED=0 GOOS=linux go build -o ../../bin/calendar_scheduler
 
 # Build Sender application
-WORKDIR $GOPATH/src/github.com/AcroManiac/otus-go/homework/calendargrpc/cmd/calendar_sender
+WORKDIR $GOPATH/src/github.com/ahamtat/otus-go/homework/calendargrpc/cmd/calendar_sender
 RUN CGO_ENABLED=0 GOOS=linux go build -o ../../bin/calendar_sender

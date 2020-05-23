@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/pkg/api"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/pkg/api"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
 )

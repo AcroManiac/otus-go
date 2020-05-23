@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/AcroManiac/otus-go/homework/calendar/internal/event"
+	"github.com/ahamtat/otus-go/homework/calendar/internal/event"
 	"github.com/google/uuid"
 )
 

@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/logger"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/logger"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )

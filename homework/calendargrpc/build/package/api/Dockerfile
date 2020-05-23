@@ -19,6 +19,6 @@ RUN rm -rf /var/cache/apk/*
 
 WORKDIR /calendargrpc
 ENV GOPATH /go
-COPY --from=deployments_builder:latest $GOPATH/src/github.com/AcroManiac/otus-go/homework/calendargrpc/bin/calendar_api .
+COPY --from=deployments_builder:latest $GOPATH/src/github.com/ahamtat/otus-go/homework/calendargrpc/bin/calendar_api .
 EXPOSE 8888
 CMD ["dockerize", "-wait", "tcp://postgres:5432", "-timeout", "10s", "-wait-retry-interval", "5s", "./calendar_api"]

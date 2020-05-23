@@ -6,9 +6,9 @@ import (
 
 	"github.com/cucumber/messages-go/v10"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/internal/infrastructure/database"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/internal/infrastructure/database"
 
-	"github.com/AcroManiac/otus-go/homework/calendargrpc/pkg/api"
+	"github.com/ahamtat/otus-go/homework/calendargrpc/pkg/api"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 
